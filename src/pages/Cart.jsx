@@ -15,14 +15,23 @@ import {
     selectCartTotal,
     selectCartItemCount,
     removeFromCart,
-    updateQuantity,
+    updateItemQuantity,
     clearCart,
-    calculateItemTotal,
-    formatPrice
 } from '../features/cart/cartSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Cart = () => {
+    const formatPrice = (value) => {
+        const amount = Number(value || 0);
+        return amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+    };
+
+    const calculateItemTotal = (item) => {
+        const unit = item.basePrice ?? item.price ?? 0;
+        const qty = item.quantity ?? 1;
+        return unit * qty;
+    };
+
     const [isUpdating, setIsUpdating] = useState(false);
     const [removingItem, setRemovingItem] = useState(null);
 
@@ -33,12 +42,12 @@ const Cart = () => {
     const cartTotal = useSelector(selectCartTotal);
     const cartItemCount = useSelector(selectCartItemCount);
 
-    const handleQuantityChange = async (itemId, newQuantity) => {
+    const handleQuantityChange = async (serviceId, newQuantity) => {
         if (newQuantity < 1) return;
 
         setIsUpdating(true);
         try {
-            dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+            dispatch(updateItemQuantity({ serviceId, quantity: newQuantity }));
         } catch (error) {
             toast.error('Failed to update quantity');
         } finally {
@@ -46,10 +55,10 @@ const Cart = () => {
         }
     };
 
-    const handleRemoveItem = async (itemId) => {
-        setRemovingItem(itemId);
+    const handleRemoveItem = async (serviceId) => {
+        setRemovingItem(serviceId);
         try {
-            dispatch(removeFromCart(itemId));
+            dispatch(removeFromCart(serviceId));
             toast.success('Item removed from cart');
         } catch (error) {
             toast.error('Failed to remove item');
@@ -123,7 +132,7 @@ const Cart = () => {
 
                             <div className="divide-y divide-gray-200">
                                 {cartItems.map((item) => (
-                                    <div key={item.id} className="p-6">
+                                    <div key={item.serviceId} className="p-6">
                                         <div className="flex items-center space-x-4">
                                             {/* Item Image */}
                                             <div className="flex-shrink-0">
@@ -169,7 +178,7 @@ const Cart = () => {
                                                 <div className="mt-4 flex items-center justify-between">
                                                     <div className="flex items-center space-x-2">
                                                         <button
-                                                            onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                                                            onClick={() => handleQuantityChange(item.serviceId, (item.quantity || 1) - 1)}
                                                             disabled={isUpdating || (item.quantity || 1) <= 1}
                                                             className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
@@ -179,7 +188,7 @@ const Cart = () => {
                                                             {item.quantity || 1}
                                                         </span>
                                                         <button
-                                                            onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                                                            onClick={() => handleQuantityChange(item.serviceId, (item.quantity || 1) + 1)}
                                                             disabled={isUpdating}
                                                             className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
@@ -188,11 +197,11 @@ const Cart = () => {
                                                     </div>
 
                                                     <button
-                                                        onClick={() => handleRemoveItem(item.id)}
-                                                        disabled={removingItem === item.id}
+                                                        onClick={() => handleRemoveItem(item.serviceId)}
+                                                        disabled={removingItem === item.serviceId}
                                                         className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
-                                                        {removingItem === item.id ? (
+                                                        {removingItem === item.serviceId ? (
                                                             <LoadingSpinner size="small" />
                                                         ) : (
                                                             <TrashIcon className="h-5 w-5" />
