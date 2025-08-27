@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUserAnalytics } from '../../features/admin/adminSlice';
+import { useForm } from 'react-hook-form';
+import { createServiceProvider } from '../../features/auth/authSlice';
 
 const UsersManagement = () => {
     const dispatch = useDispatch();
@@ -12,6 +14,19 @@ const UsersManagement = () => {
     }, [dispatch]);
 
     if (!user || user.role !== 'admin') return <div className="p-6">Access denied</div>;
+
+    const { register, handleSubmit, reset } = useForm();
+
+    const onCreateProvider = async (data) => {
+        try {
+            await dispatch(createServiceProvider(data)).unwrap();
+            reset();
+            dispatch(getUserAnalytics({}));
+            alert('Service provider created');
+        } catch (e) {
+            alert(e);
+        }
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -42,6 +57,36 @@ const UsersManagement = () => {
                     </div>
                 </div>
             )}
+
+            {/* Admin-only: create service provider */}
+            <div id="create-provider" className="mt-8 bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">Create Service Provider</h3>
+                <form onSubmit={handleSubmit(onCreateProvider)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">First Name</label>
+                        <input className="w-full border rounded px-3 py-2" {...register('firstName', { required: true })} />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">Last Name</label>
+                        <input className="w-full border rounded px-3 py-2" {...register('lastName', { required: true })} />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">Email</label>
+                        <input type="email" className="w-full border rounded px-3 py-2" {...register('email', { required: true })} />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">Phone</label>
+                        <input className="w-full border rounded px-3 py-2" {...register('phone', { required: true })} />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">Password</label>
+                        <input type="password" className="w-full border rounded px-3 py-2" {...register('password', { required: true })} />
+                    </div>
+                    <div className="md:col-span-2 mt-2">
+                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Create Provider</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

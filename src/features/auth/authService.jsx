@@ -1,6 +1,16 @@
 import axios from 'axios';
 
 const API_URL = '/api/auth/';
+// Admin create service provider
+const registerServiceProvider = async (userData, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.post(API_URL + 'register/service-provider', userData, config);
+  return response.data;
+};
 
 // Register user
 const register = async (userData) => {
@@ -88,6 +98,7 @@ const resendVerification = async (token) => {
 
 const authService = {
   register,
+  registerServiceProvider,
   login,
   logout,
   getMe,

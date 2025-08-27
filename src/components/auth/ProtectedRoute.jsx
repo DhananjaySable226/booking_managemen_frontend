@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, forbidRoles = [] }) => {
   const { user, isLoading } = useSelector((state) => state.auth);
 
   if (isLoading) {
@@ -19,6 +19,12 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   if (adminOnly && user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  if (forbidRoles.includes(user.role)) {
+    // If admin is forbidden on this route, send them to admin dashboard; otherwise default to /
+    const redirectTo = user.role === 'admin' ? '/admin' : '/';
+    return <Navigate to={redirectTo} replace />;
   }
 
   return children;

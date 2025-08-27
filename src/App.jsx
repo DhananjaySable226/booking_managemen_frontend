@@ -66,12 +66,12 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Services />} />
             <Route path="/services/:id" element={<ServiceDetail />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/cart" element={<Cart />} />
+            <Route path="/payments" element={<ProtectedRoute forbidRoles={['admin']}><Payments /></ProtectedRoute>} />
+            <Route path="/cart" element={<ProtectedRoute forbidRoles={['admin']}><Cart /></ProtectedRoute>} />
             <Route
               path="/checkout"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute forbidRoles={['admin']}>
                   <Checkout />
                 </ProtectedRoute>
               }

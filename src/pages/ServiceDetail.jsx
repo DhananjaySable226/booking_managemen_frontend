@@ -168,6 +168,8 @@ const ServiceDetail = () => {
         );
     }
 
+    const isAdmin = user?.role === 'admin';
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -446,99 +448,101 @@ const ServiceDetail = () => {
 
                     {/* Booking Sidebar */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Book This Service</h3>
+                        {!isAdmin && (
+                            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Book This Service</h3>
 
-                            <div className="space-y-4">
-                                {/* Date Selection */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Select Date
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={selectedDate}
-                                        onChange={(e) => setSelectedDate(e.target.value)}
-                                        min={new Date().toISOString().split('T')[0]}
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
-                                    />
-                                </div>
-
-                                {/* Time Selection */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Select Time
-                                    </label>
-                                    <select
-                                        value={selectedTime}
-                                        onChange={(e) => setSelectedTime(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
-                                    >
-                                        <option value="">Select time</option>
-                                        <option value="09:00">9:00 AM</option>
-                                        <option value="10:00">10:00 AM</option>
-                                        <option value="11:00">11:00 AM</option>
-                                        <option value="12:00">12:00 PM</option>
-                                        <option value="13:00">1:00 PM</option>
-                                        <option value="14:00">2:00 PM</option>
-                                        <option value="15:00">3:00 PM</option>
-                                        <option value="16:00">4:00 PM</option>
-                                        <option value="17:00">5:00 PM</option>
-                                    </select>
-                                </div>
-
-                                {/* Price Summary */}
-                                <div className="border-t pt-4">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-gray-600">Service Price</span>
-                                        <span className="font-medium">{formatPrice(service?.price)}</span>
+                                <div className="space-y-4">
+                                    {/* Date Selection */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Select Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={selectedDate}
+                                            onChange={(e) => setSelectedDate(e.target.value)}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
+                                        />
                                     </div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-gray-600">Booking Fee</span>
-                                        <span className="font-medium">{formatPrice(10)}</span>
+
+                                    {/* Time Selection */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Select Time
+                                        </label>
+                                        <select
+                                            value={selectedTime}
+                                            onChange={(e) => setSelectedTime(e.target.value)}
+                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
+                                        >
+                                            <option value="">Select time</option>
+                                            <option value="09:00">9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                            <option value="13:00">1:00 PM</option>
+                                            <option value="14:00">2:00 PM</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00">5:00 PM</option>
+                                        </select>
                                     </div>
-                                    <div className="border-t pt-2">
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-semibold text-gray-900">Total</span>
-                                            <span className="font-bold text-lg text-green-600">
-                                                {formatPrice((typeof service?.price === 'number' ? service.price : (service?.price?.amount ?? 0)) + 10)}
-                                            </span>
+
+                                    {/* Price Summary */}
+                                    <div className="border-t pt-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-600">Service Price</span>
+                                            <span className="font-medium">{formatPrice(service?.price)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-600">Booking Fee</span>
+                                            <span className="font-medium">{formatPrice(10)}</span>
+                                        </div>
+                                        <div className="border-t pt-2">
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-semibold text-gray-900">Total</span>
+                                                <span className="font-bold text-lg text-green-600">
+                                                    {formatPrice((typeof service?.price === 'number' ? service.price : (service?.price?.amount ?? 0)) + 10)}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Action Buttons */}
-                                <div className="space-y-3">
-                                    <button
-                                        onClick={handleBookNow}
-                                        className="w-full bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 transition-colors"
-                                    >
-                                        Book Now
-                                    </button>
-                                    <button
-                                        onClick={handleAddToCart}
-                                        className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-md font-medium hover:bg-gray-200 transition-colors"
-                                    >
-                                        Add to Cart
-                                    </button>
-                                </div>
+                                    {/* Action Buttons */}
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={handleBookNow}
+                                            className="w-full bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 transition-colors"
+                                        >
+                                            Book Now
+                                        </button>
+                                        <button
+                                            onClick={handleAddToCart}
+                                            className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-md font-medium hover:bg-gray-200 transition-colors"
+                                        >
+                                            Add to Cart
+                                        </button>
+                                    </div>
 
-                                {/* Contact Information */}
-                                <div className="border-t pt-4">
-                                    <h4 className="font-medium text-gray-900 mb-3">Contact Provider</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <PhoneIcon className="h-4 w-4 mr-2" />
-                                            {service?.provider?.phone || 'N/A'}
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <EnvelopeIcon className="h-4 w-4 mr-2" />
-                                            {service?.provider?.email || 'N/A'}
+                                    {/* Contact Information */}
+                                    <div className="border-t pt-4">
+                                        <h4 className="font-medium text-gray-900 mb-3">Contact Provider</h4>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <PhoneIcon className="h-4 w-4 mr-2" />
+                                                {service?.provider?.phone || 'N/A'}
+                                            </div>
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <EnvelopeIcon className="h-4 w-4 mr-2" />
+                                                {service?.provider?.email || 'N/A'}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

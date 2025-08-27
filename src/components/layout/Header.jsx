@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
-import { 
-  FaUser, 
-  FaSignOutAlt, 
-  FaBars, 
-  FaTimes, 
+import {
+  FaUser,
+  FaSignOutAlt,
+  FaBars,
+  FaTimes,
   FaSearch,
   FaBell,
   FaShoppingCart
@@ -41,6 +41,8 @@ const Header = () => {
     return location.pathname === path;
   };
 
+  const isAdminArea = location.pathname.startsWith('/admin');
+
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
@@ -63,32 +65,29 @@ const Header = () => {
           <nav className="hidden md:flex space-x-8">
             <Link
               to="/"
-              className={`${
-                isActive('/')
-                  ? 'text-primary-600 border-b-2 border-primary-600'
-                  : 'text-gray-500 hover:text-gray-900'
-              } px-3 py-2 text-sm font-medium transition-colors duration-200`}
+              className={`${isActive('/')
+                ? 'text-primary-600 border-b-2 border-primary-600'
+                : 'text-gray-500 hover:text-gray-900'
+                } px-3 py-2 text-sm font-medium transition-colors duration-200`}
             >
               Home
             </Link>
             <Link
               to="/services"
-              className={`${
-                isActive('/services')
-                  ? 'text-primary-600 border-b-2 border-primary-600'
-                  : 'text-gray-500 hover:text-gray-900'
-              } px-3 py-2 text-sm font-medium transition-colors duration-200`}
+              className={`${isActive('/services')
+                ? 'text-primary-600 border-b-2 border-primary-600'
+                : 'text-gray-500 hover:text-gray-900'
+                } px-3 py-2 text-sm font-medium transition-colors duration-200`}
             >
               Services
             </Link>
-            {user && (
+            {user && user.role !== 'admin' && (
               <Link
                 to="/bookings"
-                className={`${
-                  isActive('/bookings')
-                    ? 'text-primary-600 border-b-2 border-primary-600'
-                    : 'text-gray-500 hover:text-gray-900'
-                } px-3 py-2 text-sm font-medium transition-colors duration-200`}
+                className={`${isActive('/bookings')
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-500 hover:text-gray-900'
+                  } px-3 py-2 text-sm font-medium transition-colors duration-200`}
               >
                 My Bookings
               </Link>
@@ -114,7 +113,7 @@ const Header = () => {
           {/* Right side - User menu and cart */}
           <div className="flex items-center space-x-4">
             {/* Cart Icon */}
-            {user && (
+            {user && user.role !== 'admin' && (
               <Link
                 to="/cart"
                 className="relative p-2 text-gray-500 hover:text-primary-600 transition-colors duration-200"
@@ -221,22 +220,20 @@ const Header = () => {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
               <Link
                 to="/"
-                className={`${
-                  isActive('/')
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                } block px-3 py-2 rounded-md text-base font-medium`}
+                className={`${isActive('/')
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                  } block px-3 py-2 rounded-md text-base font-medium`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link
                 to="/services"
-                className={`${
-                  isActive('/services')
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                } block px-3 py-2 rounded-md text-base font-medium`}
+                className={`${isActive('/services')
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                  } block px-3 py-2 rounded-md text-base font-medium`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Services
@@ -244,17 +241,16 @@ const Header = () => {
               {user && (
                 <Link
                   to="/bookings"
-                  className={`${
-                    isActive('/bookings')
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                  } block px-3 py-2 rounded-md text-base font-medium`}
+                  className={`${isActive('/bookings')
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                    } block px-3 py-2 rounded-md text-base font-medium`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Bookings
                 </Link>
               )}
-              
+
               {/* Mobile Search */}
               <form onSubmit={handleSearch} className="px-3 py-2">
                 <div className="relative">
