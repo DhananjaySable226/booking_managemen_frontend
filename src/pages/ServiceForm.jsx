@@ -18,7 +18,7 @@ const ServiceForm = () => {
   const isEditing = Boolean(id);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+
   const { loading, service } = useSelector((state) => state.services);
   const { user } = useSelector((state) => state.auth);
 
@@ -88,11 +88,11 @@ const ServiceForm = () => {
       setValue('location.country', service.location?.country);
       setValue('cancellationPolicy', service.cancellationPolicy || 'moderate');
       setValue('cancellationHours', service.cancellationHours || 24);
-      
+
       if (service.availability?.schedule) {
         setAvailability(service.availability.schedule);
       }
-      
+
       if (service.images) {
         setImages(service.images);
       }
@@ -132,12 +132,29 @@ const ServiceForm = () => {
       const serviceData = {
         ...data,
         availability: {
+          isAvailable: true,
           schedule: availability,
-          maxBookingsPerSlot: 1
+          maxBookingsPerSlot: 1,
+          timeSlots: []
         },
         features: [],
         amenities: [],
-        tags: []
+        tags: [],
+        images: images,
+        cancellationHours: data.cancellationHours || 24,
+        specifications: {},
+        reviews: [],
+        insurance: {
+          isRequired: false,
+          amount: 0
+        },
+        deposit: {
+          isRequired: false,
+          amount: 0
+        },
+        isActive: true,
+        isFeatured: false,
+        subcategory: data.subcategory || ''
       };
 
       if (isEditing) {
@@ -147,7 +164,7 @@ const ServiceForm = () => {
         await dispatch(createService(serviceData)).unwrap();
         toast.success('Service created successfully');
       }
-      
+
       navigate('/dashboard');
     } catch (error) {
       toast.error(error || 'Failed to save service');
@@ -175,7 +192,7 @@ const ServiceForm = () => {
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -183,13 +200,12 @@ const ServiceForm = () => {
                 </label>
                 <input
                   type="text"
-                  {...register('name', { 
+                  {...register('name', {
                     required: 'Service name is required',
                     minLength: { value: 3, message: 'Name must be at least 3 characters' }
                   })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors.name ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter service name"
                 />
                 {errors.name && (
@@ -203,9 +219,8 @@ const ServiceForm = () => {
                 </label>
                 <select
                   {...register('category', { required: 'Category is required' })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors.category ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors.category ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select category</option>
                   {categories.map(category => (
@@ -224,14 +239,13 @@ const ServiceForm = () => {
                   Description *
                 </label>
                 <textarea
-                  {...register('description', { 
+                  {...register('description', {
                     required: 'Description is required',
                     minLength: { value: 10, message: 'Description must be at least 10 characters' }
                   })}
                   rows={4}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors.description ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors.description ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Describe your service in detail"
                 />
                 {errors.description && (
@@ -244,7 +258,7 @@ const ServiceForm = () => {
           {/* Pricing */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Pricing</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -254,13 +268,12 @@ const ServiceForm = () => {
                   type="number"
                   step="0.01"
                   min="0"
-                  {...register('price.amount', { 
+                  {...register('price.amount', {
                     required: 'Price is required',
                     min: { value: 0, message: 'Price must be positive' }
                   })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors['price.amount'] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors['price.amount'] ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="0.00"
                 />
                 {errors['price.amount'] && (
@@ -304,7 +317,7 @@ const ServiceForm = () => {
           {/* Location */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Location</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -313,9 +326,8 @@ const ServiceForm = () => {
                 <input
                   type="text"
                   {...register('location.address', { required: 'Address is required' })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors['location.address'] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors['location.address'] ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter full address"
                 />
                 {errors['location.address'] && (
@@ -330,9 +342,8 @@ const ServiceForm = () => {
                 <input
                   type="text"
                   {...register('location.city', { required: 'City is required' })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors['location.city'] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors['location.city'] ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter city"
                 />
                 {errors['location.city'] && (
@@ -347,9 +358,8 @@ const ServiceForm = () => {
                 <input
                   type="text"
                   {...register('location.state', { required: 'State is required' })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors['location.state'] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors['location.state'] ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter state"
                 />
                 {errors['location.state'] && (
@@ -376,9 +386,8 @@ const ServiceForm = () => {
                 <input
                   type="text"
                   {...register('location.country', { required: 'Country is required' })}
-                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors['location.country'] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${errors['location.country'] ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="Enter country"
                 />
                 {errors['location.country'] && (
@@ -391,7 +400,7 @@ const ServiceForm = () => {
           {/* Availability */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Availability</h2>
-            
+
             <div className="space-y-4">
               {Object.entries(availability).map(([day, schedule]) => (
                 <div key={day} className="flex items-center space-x-4">
@@ -408,7 +417,7 @@ const ServiceForm = () => {
                       </span>
                     </label>
                   </div>
-                  
+
                   {schedule.isOpen && (
                     <>
                       <input
@@ -434,7 +443,7 @@ const ServiceForm = () => {
           {/* Images */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Images</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -475,7 +484,7 @@ const ServiceForm = () => {
           {/* Cancellation Policy */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Cancellation Policy</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

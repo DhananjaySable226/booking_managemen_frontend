@@ -195,8 +195,8 @@ const servicesSlice = createSlice({
       })
       .addCase(getServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.services = action.payload.services;
-        state.pagination = action.payload.pagination;
+        state.services = action.payload.data || action.payload.services || [];
+        state.pagination = action.payload.pagination || {};
         state.success = true;
       })
       .addCase(getServices.rejected, (state, action) => {
@@ -211,7 +211,7 @@ const servicesSlice = createSlice({
       })
       .addCase(getServiceById.fulfilled, (state, action) => {
         state.loading = false;
-        state.service = action.payload;
+        state.service = action.payload.data || action.payload;
         state.success = true;
       })
       .addCase(getServiceById.rejected, (state, action) => {
@@ -226,8 +226,8 @@ const servicesSlice = createSlice({
       })
       .addCase(searchServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.services = action.payload.services;
-        state.pagination = action.payload.pagination;
+        state.services = action.payload.data || action.payload.services || [];
+        state.pagination = action.payload.pagination || {};
         state.success = true;
       })
       .addCase(searchServices.rejected, (state, action) => {
@@ -242,8 +242,8 @@ const servicesSlice = createSlice({
       })
       .addCase(getServicesByCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.services = action.payload.services;
-        state.pagination = action.payload.pagination;
+        state.services = action.payload.data || action.payload.services || [];
+        state.pagination = action.payload.pagination || {};
         state.success = true;
       })
       .addCase(getServicesByCategory.rejected, (state, action) => {
@@ -258,7 +258,7 @@ const servicesSlice = createSlice({
       })
       .addCase(getFeaturedServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.featuredServices = action.payload;
+        state.featuredServices = action.payload.data || action.payload || [];
         state.success = true;
       })
       .addCase(getFeaturedServices.rejected, (state, action) => {
@@ -273,7 +273,8 @@ const servicesSlice = createSlice({
       })
       .addCase(createService.fulfilled, (state, action) => {
         state.loading = false;
-        state.services.unshift(action.payload);
+        const newService = action.payload.data || action.payload;
+        state.services.unshift(newService);
         state.success = true;
         state.message = 'Service created successfully';
       })
@@ -289,12 +290,13 @@ const servicesSlice = createSlice({
       })
       .addCase(updateService.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.services.findIndex(service => service._id === action.payload._id);
+        const updatedService = action.payload.data || action.payload;
+        const index = state.services.findIndex(service => service._id === updatedService._id);
         if (index !== -1) {
-          state.services[index] = action.payload;
+          state.services[index] = updatedService;
         }
-        if (state.service && state.service._id === action.payload._id) {
-          state.service = action.payload;
+        if (state.service && state.service._id === updatedService._id) {
+          state.service = updatedService;
         }
         state.success = true;
         state.message = 'Service updated successfully';

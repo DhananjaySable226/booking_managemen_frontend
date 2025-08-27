@@ -30,7 +30,7 @@ const getUserBookings = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/user?${queryParams.toString()}`, config);
+  const response = await axios.get(`${API_URL}/my-bookings?${queryParams.toString()}`, config);
   return response.data;
 };
 

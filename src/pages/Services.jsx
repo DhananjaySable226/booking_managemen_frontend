@@ -31,10 +31,9 @@ const Services = () => {
     { id: 'hotel', name: 'Hotels & Accommodation' },
     { id: 'doctor', name: 'Healthcare & Doctors' },
     { id: 'vehicle', name: 'Vehicle Rental' },
-    { id: 'travel', name: 'Travel & Tours' },
-    { id: 'restaurant', name: 'Restaurants' },
-    { id: 'spa', name: 'Spa & Wellness' },
-    { id: 'fitness', name: 'Fitness & Sports' },
+    { id: 'transport', name: 'Transport & Tours' },
+    { id: 'equipment', name: 'Equipment Rental' },
+    { id: 'other', name: 'Other Services' },
   ];
 
   const sortOptions = [
@@ -48,6 +47,10 @@ const Services = () => {
   useEffect(() => {
     dispatch(getServices());
   }, [dispatch]);
+
+  useEffect(() => {
+    console.log('Services from Redux:', services);
+  }, [services]);
 
   useEffect(() => {
     if (error) {
@@ -80,7 +83,8 @@ const Services = () => {
 
   const filteredAndSortedServices = (services || [])
     .filter(service => {
-      const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
+      const servicePrice = service.price?.amount || 0;
+      const matchesPrice = servicePrice >= priceRange[0] && servicePrice <= priceRange[1];
       const matchesCategory = !selectedCategory || service.category === selectedCategory;
       return matchesPrice && matchesCategory;
     })
@@ -89,11 +93,11 @@ const Services = () => {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'price-low':
-          return a.price - b.price;
+          return (a.price?.amount || 0) - (b.price?.amount || 0);
         case 'price-high':
-          return b.price - a.price;
+          return (b.price?.amount || 0) - (a.price?.amount || 0);
         case 'rating':
-          return b.rating - a.rating;
+          return (b.rating?.average || 0) - (a.rating?.average || 0);
         case 'newest':
           return new Date(b.createdAt) - new Date(a.createdAt);
         default:
@@ -117,7 +121,7 @@ const Services = () => {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative">
         <img
-          src={service.images[0] || '/placeholder-service.jpg'}
+          src={service.images?.[0]?.url || '/placeholder-service.jpg'}
           alt={service.name}
           className="w-full h-48 object-cover"
         />
@@ -137,7 +141,7 @@ const Services = () => {
             {service.name}
           </h3>
           <div className="flex items-center ml-2">
-            {renderStars(service.rating)}
+            {renderStars(service.rating?.average || 0)}
             <span className="ml-1 text-sm text-gray-600">({service.reviews?.length || 0})</span>
           </div>
         </div>
@@ -155,9 +159,9 @@ const Services = () => {
           <div className="flex items-center">
             <CurrencyDollarIcon className="h-4 w-4 text-green-600 mr-1" />
             <span className="text-lg font-bold text-green-600">
-              ${service.price}
+              ${service.price?.amount || 0}
             </span>
-            <span className="text-sm text-gray-500 ml-1">/booking</span>
+            <span className="text-sm text-gray-500 ml-1">/{service.price?.type || 'booking'}</span>
           </div>
 
           <Link
@@ -325,8 +329,8 @@ const Services = () => {
               </div>
             ) : (
               <div className={`grid gap-6 ${viewMode === 'grid'
-                  ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
-                  : 'grid-cols-1'
+                ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+                : 'grid-cols-1'
                 }`}>
                 {filteredAndSortedServices.map((service) => (
                   <ServiceCard key={service._id} service={service} />

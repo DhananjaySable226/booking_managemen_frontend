@@ -4,7 +4,7 @@ import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
 
 import authReducer from '../features/auth/authSlice';
-import servicesReducer from '../features/services/serviceSlice';
+import servicesReducer from '../features/services/servicesSlice';
 import bookingReducer from '../features/bookings/bookingsSlice';
 import cartReducer from '../features/cart/cartSlice';
 import paymentReducer from '../features/payments/paymentsSlice';
