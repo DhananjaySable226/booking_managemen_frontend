@@ -146,10 +146,10 @@ const uploadImages = async (serviceId, images) => {
 
   const formData = new FormData();
   images.forEach((image, index) => {
-    formData.append('images', image);
+    formData.append('image', image);
   });
 
-  const response = await axios.post(`${BASE_URL}${API_URL}/${serviceId}/images`, formData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/upload-image`, formData, config);
   return response.data;
 };
 

@@ -18,6 +18,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { addToCart } from '../features/cart/cartSlice';
+import { useMemo } from 'react';
+import { addToFavorites, removeFromFavorites, fetchFavorites } from '../features/favorites/favoritesSlice';
 import { getServiceById, addServiceReview } from '../features/services/servicesSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -34,6 +36,7 @@ const ServiceDetail = () => {
     const [showReviews, setShowReviews] = useState(false);
 
     const { service, loading, error } = useSelector((state) => state.services);
+    const favorites = useSelector((state) => state.favorites.items);
     const { user } = useSelector((state) => state.auth);
 
     const {
@@ -50,10 +53,21 @@ const ServiceDetail = () => {
     }, [dispatch, id]);
 
     useEffect(() => {
+        if (user) {
+            dispatch(fetchFavorites());
+        }
+    }, [dispatch, user]);
+
+    useEffect(() => {
         if (error) {
             toast.error(error);
         }
     }, [error]);
+
+    useEffect(() => {
+        const fav = favorites?.some(s => (s._id || s.id) === service?._id);
+        setIsFavorite(!!fav);
+    }, [favorites, service]);
 
     const handleAddToCart = () => {
         if (!user) {
@@ -204,7 +218,20 @@ const ServiceDetail = () => {
                                 />
                                 <div className="absolute top-4 right-4 flex space-x-2">
                                     <button
-                                        onClick={() => setIsFavorite(!isFavorite)}
+                                        onClick={async () => {
+                                            if (!user) { toast.error('Please login to save favorites'); return; }
+                                            try {
+                                                if (isFavorite) {
+                                                    await dispatch(removeFromFavorites(service._id)).unwrap();
+                                                    setIsFavorite(false);
+                                                } else {
+                                                    await dispatch(addToFavorites(service._id)).unwrap();
+                                                    setIsFavorite(true);
+                                                }
+                                            } catch (e) {
+                                                toast.error('Failed to update favorites');
+                                            }
+                                        }}
                                         className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow"
                                     >
                                         {isFavorite ? (

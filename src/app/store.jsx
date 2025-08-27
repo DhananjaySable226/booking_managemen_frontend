@@ -9,11 +9,13 @@ import bookingReducer from '../features/bookings/bookingsSlice';
 import cartReducer from '../features/cart/cartSlice';
 import paymentReducer from '../features/payments/paymentsSlice';
 import uiReducer from '../features/ui/uiSlice';
+import favoritesReducer from '../features/favorites/favoritesSlice';
+import adminReducer from '../features/admin/adminSlice';
 
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['auth', 'cart'], // Only persist auth and cart
+    whitelist: ['auth', 'cart', 'favorites'], // Persist favorites for quick UI
 };
 
 const rootReducer = combineReducers({
@@ -23,6 +25,8 @@ const rootReducer = combineReducers({
     cart: cartReducer,
     payments: paymentReducer,
     ui: uiReducer,
+    favorites: favoritesReducer,
+    admin: adminReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

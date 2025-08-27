@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
-import { 
-  CalendarIcon, 
-  ClockIcon, 
-  MapPinIcon, 
+import {
+  CalendarIcon,
+  ClockIcon,
+  MapPinIcon,
   StarIcon,
   CurrencyDollarIcon,
   UserIcon,
@@ -17,6 +17,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { getUserBookings } from '../features/bookings/bookingsSlice';
 import { getPaymentHistory } from '../features/payments/paymentsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { fetchFavorites } from '../features/favorites/favoritesSlice';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -32,6 +33,7 @@ const Dashboard = () => {
   const { user, isLoading } = useSelector((state) => state.auth);
   const { bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
   const { payments, loading: paymentsLoading } = useSelector((state) => state.payments);
+  const { items: favoriteServices, loading: favoritesLoading } = useSelector((state) => state.favorites);
 
   // Add debugging
   console.log('Dashboard render:', { user, isLoading, bookingsLoading, paymentsLoading, bookings, payments });
@@ -61,8 +63,8 @@ const Dashboard = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in</h1>
           <p className="text-gray-600">You need to be logged in to view the dashboard.</p>
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="mt-4 inline-block bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700"
           >
             Go to Login
@@ -77,6 +79,7 @@ const Dashboard = () => {
     if (user && user.token) {
       dispatch(getUserBookings());
       dispatch(getPaymentHistory());
+      dispatch(fetchFavorites());
     }
   }, [dispatch, user]);
 
@@ -131,7 +134,7 @@ const Dashboard = () => {
       cancelled: { color: 'bg-red-100 text-red-800', text: 'Cancelled' },
       in_progress: { color: 'bg-purple-100 text-purple-800', text: 'In Progress' }
     };
-    
+
     const config = statusConfig[status] || statusConfig.pending;
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
@@ -238,11 +241,10 @@ const Dashboard = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
-                    activeTab === tab.id
+                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === tab.id
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <tab.icon className="h-5 w-5 mr-2" />
                   {tab.name}
@@ -344,7 +346,7 @@ const Dashboard = () => {
                     Book New Service
                   </Link>
                 </div>
-                
+
                 {bookings && Array.isArray(bookings) && bookings.length > 0 ? (
                   <div className="space-y-4">
                     {bookings.map((booking) => (
@@ -385,7 +387,7 @@ const Dashboard = () => {
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="mt-4 flex justify-end space-x-3">
                           <Link
                             to={`/bookings/${booking._id}`}
@@ -435,11 +437,10 @@ const Dashboard = () => {
                           </div>
                           <div className="text-right">
                             <p className="font-medium text-gray-900">{formatPrice(payment.amount)}</p>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              payment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                              payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${payment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                              }`}>
                               {payment.status}
                             </span>
                           </div>
@@ -457,7 +458,26 @@ const Dashboard = () => {
             {activeTab === 'favorites' && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Favorite Services</h3>
-                <p className="text-gray-500 text-center py-8">No favorite services yet</p>
+                {favoritesLoading ? (
+                  <div className="flex justify-center py-8"><LoadingSpinner size="small" /></div>
+                ) : favoriteServices && favoriteServices.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {favoriteServices.map((svc) => (
+                      <div key={svc._id} className="border rounded-lg overflow-hidden">
+                        <img src={(svc.images?.[0]?.url) || svc.images?.[0] || '/placeholder-service.jpg'} alt={svc.name} className="w-full h-40 object-cover" />
+                        <div className="p-4">
+                          <h4 className="font-medium text-gray-900">{svc.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{svc.location?.city || ''}</p>
+                          <div className="mt-3">
+                            <Link to={`/services/${svc._id}`} className="text-primary-600 hover:text-primary-700 text-sm font-medium">View</Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No favorite services yet</p>
+                )}
               </div>
             )}
 

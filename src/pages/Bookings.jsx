@@ -71,7 +71,7 @@ const Bookings = () => {
         <p className="mt-2 text-gray-600">Manage your service bookings</p>
       </div>
 
-      {bookings.length === 0 ? (
+      {bookings?.length === 0 ? (
         <div className="text-center py-12">
           <div className="mx-auto h-12 w-12 text-gray-400">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +92,7 @@ const Bookings = () => {
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
-            {bookings.map((booking) => (
+            {bookings?.map((booking) => (
               <li key={booking._id}>
                 <div className="px-4 py-4 sm:px-6">
                   <div className="flex items-center justify-between">

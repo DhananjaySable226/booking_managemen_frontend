@@ -24,6 +24,8 @@ import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ServiceManagement from './pages/admin/ServiceManagement';
+import UsersManagement from './pages/admin/UsersManagement';
+import BookingsManagement from './pages/admin/BookingsManagement';
 import ServiceForm from './pages/ServiceForm';
 import ServiceProviderDashboard from './pages/ServiceProviderDashboard';
 import NotFound from './pages/NotFound';
@@ -133,6 +135,22 @@ function App() {
               element={
                 <ProtectedRoute adminOnly>
                   <ServiceManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute adminOnly>
+                  <UsersManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/bookings"
+              element={
+                <ProtectedRoute adminOnly>
+                  <BookingsManagement />
                 </ProtectedRoute>
               }
             />

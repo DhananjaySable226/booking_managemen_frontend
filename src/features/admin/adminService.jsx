@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_URL = '/api/admin';
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL
+  : '';
+const API_URL = `${BASE_URL}/api/admin`;
 
 // Get dashboard statistics
 const getDashboardStats = async (params = {}) => {
@@ -15,7 +18,8 @@ const getDashboardStats = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/dashboard/stats?${queryParams.toString()}`, config);
+  const url = queryParams.toString() ? `${API_URL}/dashboard?${queryParams.toString()}` : `${API_URL}/dashboard`;
+  const response = await axios.get(url, config);
   return response.data;
 };
 

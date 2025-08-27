@@ -1,9 +1,14 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { getDashboardStats } from '../../features/admin/adminSlice';
 
 const AdminDashboard = () => {
+    const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
+    const { dashboardStats } = useSelector((s) => s.admin);
+
+    useEffect(() => { if (user?.role === 'admin') dispatch(getDashboardStats()); }, [dispatch, user]);
 
     if (!user || user.role !== 'admin') {
         return (
@@ -37,7 +42,7 @@ const AdminDashboard = () => {
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
-                                    <dd className="text-lg font-medium text-gray-900">0</dd>
+                                    <dd className="text-lg font-medium text-gray-900">{dashboardStats?.data?.overview?.totalUsers || 0}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -57,7 +62,7 @@ const AdminDashboard = () => {
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt className="text-sm font-medium text-gray-500 truncate">Total Bookings</dt>
-                                    <dd className="text-lg font-medium text-gray-900">0</dd>
+                                    <dd className="text-lg font-medium text-gray-900">{dashboardStats?.data?.overview?.totalBookings || 0}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -77,7 +82,7 @@ const AdminDashboard = () => {
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt className="text-sm font-medium text-gray-500 truncate">Total Services</dt>
-                                    <dd className="text-lg font-medium text-gray-900">0</dd>
+                                    <dd className="text-lg font-medium text-gray-900">{dashboardStats?.data?.overview?.totalServices || 0}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -97,7 +102,7 @@ const AdminDashboard = () => {
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                                    <dd className="text-lg font-medium text-gray-900">$0</dd>
+                                    <dd className="text-lg font-medium text-gray-900">${dashboardStats?.data?.overview?.totalRevenue || 0}</dd>
                                 </dl>
                             </div>
                         </div>

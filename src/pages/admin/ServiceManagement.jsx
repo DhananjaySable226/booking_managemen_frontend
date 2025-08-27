@@ -10,7 +10,7 @@ import {
   XMarkIcon,
   FunnelIcon
 } from '@heroicons/react/24/outline';
-import  getAllServices,{  updateService, deleteService } from '../../features/services/servicesSlice';
+import { getServices, updateService, deleteService } from '../../features/services/servicesSlice';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const ServiceManagement = () => {
@@ -27,7 +27,7 @@ const ServiceManagement = () => {
   const { services, loading } = useSelector((state) => state.services);
 
   useEffect(() => {
-    dispatch(getAllServices());
+    dispatch(getServices());
   }, [dispatch]);
 
   const handleEditService = (service) => {
@@ -53,9 +53,9 @@ const ServiceManagement = () => {
 
   const handleStatusChange = async (serviceId, newStatus) => {
     try {
-      await dispatch(updateService({ 
-        id: serviceId, 
-        serviceData: { isActive: newStatus === 'active' } 
+      await dispatch(updateService({
+        id: serviceId,
+        serviceData: { isActive: newStatus === 'active' }
       })).unwrap();
       toast.success('Service status updated successfully');
     } catch (error) {
@@ -65,12 +65,12 @@ const ServiceManagement = () => {
 
   const filteredServices = services.filter(service => {
     const matchesCategory = !filters.category || service.category === filters.category;
-    const matchesStatus = !filters.status || 
+    const matchesStatus = !filters.status ||
       (filters.status === 'active' ? service.isActive : !service.isActive);
-    const matchesSearch = !filters.search || 
+    const matchesSearch = !filters.search ||
       service.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       service.description.toLowerCase().includes(filters.search.toLowerCase());
-    
+
     return matchesCategory && matchesStatus && matchesSearch;
   });
 
@@ -218,11 +218,10 @@ const ServiceManagement = () => {
                       ${service.price?.amount || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        service.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${service.isActive
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
                         {service.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -242,11 +241,10 @@ const ServiceManagement = () => {
                         </button>
                         <button
                           onClick={() => handleStatusChange(service._id, service.isActive ? 'inactive' : 'active')}
-                          className={`${
-                            service.isActive 
-                              ? 'text-red-600 hover:text-red-900' 
-                              : 'text-green-600 hover:text-green-900'
-                          }`}
+                          className={`${service.isActive
+                            ? 'text-red-600 hover:text-red-900'
+                            : 'text-green-600 hover:text-green-900'
+                            }`}
                         >
                           {service.isActive ? (
                             <XMarkIcon className="h-4 w-4" />

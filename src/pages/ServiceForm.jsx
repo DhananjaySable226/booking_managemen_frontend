@@ -11,6 +11,7 @@ import {
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { createService, updateService, getServiceById } from '../features/services/servicesSlice';
+import servicesService from '../features/services/servicesService';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ServiceForm = () => {
@@ -129,6 +130,26 @@ const ServiceForm = () => {
 
   const onSubmit = async (data) => {
     try {
+      // Separate newly added local files from already-uploaded images
+      const newFiles = images.filter(img => img.file).map(img => img.file);
+
+      let uploadedImages = [];
+      if (newFiles.length > 0) {
+        const uploadResp = await servicesService.uploadImages(null, newFiles);
+        uploadedImages = (uploadResp.images || uploadResp.data || []).map(img => ({
+          public_id: img.public_id,
+          url: img.url
+        }));
+      }
+
+      // Keep existing remote images (those without a File attached)
+      const existingRemoteImages = images.filter(img => !img.file).map(img => ({
+        public_id: img.public_id,
+        url: img.url
+      }));
+
+      const finalImages = [...existingRemoteImages, ...uploadedImages];
+
       const serviceData = {
         ...data,
         availability: {
@@ -140,7 +161,7 @@ const ServiceForm = () => {
         features: [],
         amenities: [],
         tags: [],
-        images: images,
+        images: finalImages,
         cancellationHours: data.cancellationHours || 24,
         specifications: {},
         reviews: [],
