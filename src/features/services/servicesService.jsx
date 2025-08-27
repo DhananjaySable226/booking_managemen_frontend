@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL
+  : 'http://localhost:5000';
+
 const API_URL = '/api/services';
 
 // Get all services
@@ -21,7 +25,7 @@ const getServices = async (params = {}) => {
   if (params.sortBy) queryParams.append('sortBy', params.sortBy);
   if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
-  const response = await axios.get(`${API_URL}?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -33,7 +37,7 @@ const getServiceById = async (id) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/${id}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/${id}`, config);
   return response.data;
 };
 
@@ -52,7 +56,7 @@ const searchServices = async (searchParams) => {
   if (searchParams.page) queryParams.append('page', searchParams.page);
   if (searchParams.limit) queryParams.append('limit', searchParams.limit);
 
-  const response = await axios.get(`${API_URL}/search?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/search?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -64,7 +68,7 @@ const getServicesByCategory = async (category) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/category/${category}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/category/${category}`, config);
   return response.data;
 };
 
@@ -76,7 +80,7 @@ const getFeaturedServices = async () => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/featured`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/featured`, config);
   return response.data;
 };
 
@@ -89,7 +93,7 @@ const createService = async (serviceData) => {
     },
   };
 
-  const response = await axios.post(API_URL, serviceData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}`, serviceData, config);
   return response.data;
 };
 
@@ -102,7 +106,7 @@ const updateService = async (id, serviceData) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/${id}`, serviceData, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}`, serviceData, config);
   return response.data;
 };
 
@@ -114,7 +118,7 @@ const deleteService = async (id) => {
     },
   };
 
-  const response = await axios.delete(`${API_URL}/${id}`, config);
+  const response = await axios.delete(`${BASE_URL}${API_URL}/${id}`, config);
   return response.data;
 };
 
@@ -127,7 +131,7 @@ const addReview = async (serviceId, reviewData) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/${serviceId}/reviews`, reviewData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/${serviceId}/reviews`, reviewData, config);
   return response.data;
 };
 
@@ -145,7 +149,7 @@ const uploadImages = async (serviceId, images) => {
     formData.append('images', image);
   });
 
-  const response = await axios.post(`${API_URL}/${serviceId}/images`, formData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/${serviceId}/images`, formData, config);
   return response.data;
 };
 
@@ -157,7 +161,7 @@ const deleteImage = async (serviceId, imageId) => {
     },
   };
 
-  const response = await axios.delete(`${API_URL}/${serviceId}/images/${imageId}`, config);
+  const response = await axios.delete(`${BASE_URL}${API_URL}/${serviceId}/images/${imageId}`, config);
   return response.data;
 };
 
@@ -170,7 +174,7 @@ const updateAvailability = async (serviceId, availabilityData) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/${serviceId}/availability`, availabilityData, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/${serviceId}/availability`, availabilityData, config);
   return response.data;
 };
 
@@ -182,7 +186,7 @@ const getProviderServices = async () => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/provider/my-services`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/provider/my-services`, config);
   return response.data;
 };
 
@@ -194,7 +198,7 @@ const checkAvailability = async (serviceId, date, time) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/${serviceId}/availability`, {
+  const response = await axios.get(`${BASE_URL}${API_URL}/${serviceId}/availability`, {
     params: { date, time },
     ...config,
   });

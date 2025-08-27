@@ -35,6 +35,7 @@ import Help from './pages/Help';
 import FAQ from './pages/FAQ';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Checkout from './pages/Checkout';
 
 // Redux actions
 import { getMe } from './features/auth/authSlice';
@@ -65,6 +66,14 @@ function App() {
             <Route path="/services/:id" element={<ServiceDetail />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/cart" element={<Cart />} />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/help" element={<Help />} />
@@ -127,7 +136,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Service Provider Routes */}
             <Route
               path="/provider/*"
@@ -137,7 +146,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Service Management Routes */}
             <Route
               path="/services/create"

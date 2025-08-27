@@ -3,20 +3,19 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { 
-  CreditCardIcon, 
-  LockClosedIcon, 
+import {
+  CreditCardIcon,
+  LockClosedIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
-import { 
-  selectCartItems, 
-  selectCartTotal, 
+// Remove incorrect imports; we'll define local helpers below
+import {
+  selectCartItems,
+  selectCartTotal,
   selectCartItemCount,
   clearCart,
-  calculateItemTotal,
-  formatPrice
 } from '../features/cart/cartSlice';
 import { createBooking } from '../features/bookings/bookingsSlice';
 import { createPaymentIntent, confirmPayment } from '../features/payments/paymentsSlice';
@@ -43,6 +42,19 @@ const Checkout = () => {
     watch,
     setValue,
   } = useForm();
+
+  // Local helpers
+  const calculateItemTotal = (item) => {
+    if (!item) return 0;
+    const unit = typeof item.basePrice === 'number' ? item.basePrice : (typeof item.price === 'number' ? item.price : 0);
+    const qty = item.quantity || 1;
+    return unit * qty;
+  };
+
+  const formatPrice = (amount) => {
+    const value = typeof amount === 'number' ? amount : (amount || 0);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -80,6 +92,19 @@ const Checkout = () => {
     return calculateSubtotal() + calculateTax() + calculateBookingFees();
   };
 
+  const computeEndTime = (startTime, durationHours) => {
+    try {
+      const [h, m] = (startTime || '00:00').split(':').map(Number);
+      const start = new Date(2000, 0, 1, h || 0, m || 0, 0, 0);
+      const end = new Date(start.getTime() + Math.round((durationHours || 1) * 60) * 60000);
+      const hh = String(end.getHours()).padStart(2, '0');
+      const mm = String(end.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    } catch (e) {
+      return startTime;
+    }
+  };
+
   const handleNextStep = () => {
     if (step === 1) {
       // Validate contact information
@@ -109,11 +134,11 @@ const Checkout = () => {
       for (const item of cartItems) {
         const bookingData = {
           serviceId: item.serviceId,
-          providerId: item.provider._id,
           bookingDate: item.date,
           startTime: item.time,
+          endTime: computeEndTime(item.time, item.quantity || 1),
           duration: item.quantity || 1,
-          totalAmount: calculateItemTotal(item),
+          totalAmount: Number(calculateItemTotal(item)) || 0,
           specialRequests: data.specialRequests || '',
           contactInfo: {
             phone: data.phone,
@@ -166,39 +191,34 @@ const Checkout = () => {
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
       <div className="flex items-center">
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-          step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
-        }`}>
+        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
+          }`}>
           {step > 1 ? (
             <CheckCircleIcon className="w-5 h-5" />
           ) : (
             <span className="text-sm font-medium">1</span>
           )}
         </div>
-        <div className={`ml-2 text-sm font-medium ${
-          step >= 1 ? 'text-primary-600' : 'text-gray-500'
-        }`}>
+        <div className={`ml-2 text-sm font-medium ${step >= 1 ? 'text-primary-600' : 'text-gray-500'
+          }`}>
           Contact Info
         </div>
       </div>
-      
-      <div className={`w-16 h-0.5 mx-4 ${
-        step >= 2 ? 'bg-primary-600' : 'bg-gray-200'
-      }`}></div>
-      
+
+      <div className={`w-16 h-0.5 mx-4 ${step >= 2 ? 'bg-primary-600' : 'bg-gray-200'
+        }`}></div>
+
       <div className="flex items-center">
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-          step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
-        }`}>
+        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
+          }`}>
           {step >= 2 ? (
             <CheckCircleIcon className="w-5 h-5" />
           ) : (
             <span className="text-sm font-medium">2</span>
           )}
         </div>
-        <div className={`ml-2 text-sm font-medium ${
-          step >= 2 ? 'text-primary-600' : 'text-gray-500'
-        }`}>
+        <div className={`ml-2 text-sm font-medium ${step >= 2 ? 'text-primary-600' : 'text-gray-500'
+          }`}>
           Payment
         </div>
       </div>
@@ -262,7 +282,7 @@ const Checkout = () => {
                   // Step 1: Contact Information
                   <div className="space-y-6">
                     <h2 className="text-xl font-semibold text-gray-900">Contact Information</h2>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -297,7 +317,7 @@ const Checkout = () => {
                       </label>
                       <input
                         type="email"
-                        {...register('email', { 
+                        {...register('email', {
                           required: 'Email is required',
                           pattern: {
                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -317,7 +337,7 @@ const Checkout = () => {
                       </label>
                       <input
                         type="tel"
-                        {...register('phone', { 
+                        {...register('phone', {
                           required: 'Phone number is required',
                           pattern: {
                             value: /^[\+]?[1-9][\d]{0,15}$/,
@@ -356,20 +376,20 @@ const Checkout = () => {
                   // Step 2: Payment
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <h2 className="text-xl font-semibold text-gray-900">Payment Information</h2>
-                    
+
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center mb-4">
                         <CreditCardIcon className="h-5 w-5 text-gray-400 mr-2" />
                         <span className="text-sm font-medium text-gray-900">Credit Card</span>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Card Number *
                           </label>
                           <input
-                            {...register('cardNumber', { 
+                            {...register('cardNumber', {
                               required: 'Card number is required',
                               pattern: {
                                 value: /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/,
@@ -389,7 +409,7 @@ const Checkout = () => {
                             Expiry Month *
                           </label>
                           <input
-                            {...register('expMonth', { 
+                            {...register('expMonth', {
                               required: 'Expiry month is required',
                               pattern: {
                                 value: /^(0[1-9]|1[0-2])$/,
@@ -409,7 +429,7 @@ const Checkout = () => {
                             Expiry Year *
                           </label>
                           <input
-                            {...register('expYear', { 
+                            {...register('expYear', {
                               required: 'Expiry year is required',
                               pattern: {
                                 value: /^\d{2}$/,
@@ -429,7 +449,7 @@ const Checkout = () => {
                             CVV *
                           </label>
                           <input
-                            {...register('cvc', { 
+                            {...register('cvc', {
                               required: 'CVV is required',
                               pattern: {
                                 value: /^\d{3,4}$/,
@@ -480,11 +500,11 @@ const Checkout = () => {
               <div className="lg:col-span-1">
                 <div className="bg-gray-50 rounded-lg p-6 sticky top-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-                  
+
                   {/* Cart Items */}
                   <div className="space-y-3 mb-4">
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3">
+                      <div key={item.serviceId} className="flex items-center space-x-3">
                         <img
                           src={item.image || '/placeholder-service.jpg'}
                           alt={item.serviceName}

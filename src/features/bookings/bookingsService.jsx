@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL
+  : 'http://localhost:5000';
+
 const API_URL = '/api/bookings';
 
 // Create new booking
@@ -11,7 +15,7 @@ const createBooking = async (bookingData) => {
     },
   };
 
-  const response = await axios.post(API_URL, bookingData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}`, bookingData, config);
   return response.data;
 };
 
@@ -30,7 +34,7 @@ const getUserBookings = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/my-bookings?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/my-bookings?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -42,7 +46,7 @@ const getBookingById = async (id) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/${id}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/${id}`, config);
   return response.data;
 };
 
@@ -55,7 +59,7 @@ const updateBooking = async (id, bookingData) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/${id}`, bookingData, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}`, bookingData, config);
   return response.data;
 };
 
@@ -68,7 +72,7 @@ const cancelBooking = async (id, reason) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/${id}/cancel`, { reason }, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}/cancel`, { reason }, config);
   return response.data;
 };
 
@@ -81,7 +85,7 @@ const rateBooking = async (id, ratingData) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/${id}/rate`, ratingData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/${id}/rate`, ratingData, config);
   return response.data;
 };
 
@@ -100,7 +104,7 @@ const getProviderBookings = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/provider?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/provider?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -121,7 +125,7 @@ const getAllBookings = async (params = {}) => {
   if (params.userId) queryParams.append('userId', params.userId);
   if (params.serviceId) queryParams.append('serviceId', params.serviceId);
 
-  const response = await axios.get(`${API_URL}?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -133,7 +137,7 @@ const checkAvailability = async (serviceId, date, time) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/availability`, {
+  const response = await axios.get(`${BASE_URL}${API_URL}/availability`, {
     params: { serviceId, date, time },
     ...config,
   });
@@ -149,7 +153,7 @@ const addNote = async (id, note) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/${id}/notes`, { note }, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/${id}/notes`, { note }, config);
   return response.data;
 };
 
@@ -161,7 +165,7 @@ const getBookingNotes = async (id) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/${id}/notes`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/${id}/notes`, config);
   return response.data;
 };
 
@@ -174,7 +178,7 @@ const updateBookingStatus = async (id, status) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/${id}/status`, { status }, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}/status`, { status }, config);
   return response.data;
 };
 
@@ -191,7 +195,7 @@ const getBookingStats = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/stats?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/stats?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -210,7 +214,7 @@ const exportBookings = async (params = {}) => {
   if (params.endDate) queryParams.append('endDate', params.endDate);
   if (params.status) queryParams.append('status', params.status);
 
-  const response = await axios.get(`${API_URL}/export?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/export?${queryParams.toString()}`, config);
   return response.data;
 };
 

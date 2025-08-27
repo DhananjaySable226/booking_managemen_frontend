@@ -16,6 +16,18 @@ import { getServices, searchServices, getServicesByCategory } from '../features/
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Services = () => {
+  const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+    ? import.meta.env.VITE_API_BASE_URL
+    : 'http://localhost:5000';
+
+  const resolveImageUrl = (value) => {
+    if (!value) return '/placeholder-service.jpg';
+    const url = typeof value === 'string' ? value : (value.url || '');
+    if (!url) return '/placeholder-service.jpg';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // backend-served relative path (e.g., /uploads/..)
+    return `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [priceRange, setPriceRange] = useState([0, 1000]);
@@ -121,7 +133,7 @@ const Services = () => {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative">
         <img
-          src={service.images?.[0]?.url || '/placeholder-service.jpg'}
+          src={resolveImageUrl(service.images?.[0])}
           alt={service.name}
           className="w-full h-48 object-cover"
         />

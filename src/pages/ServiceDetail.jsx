@@ -62,12 +62,15 @@ const ServiceDetail = () => {
             return;
         }
 
+        const basePrice = typeof service?.price === 'number' ? service.price : (service?.price?.amount ?? 0);
         const cartItem = {
-            serviceId: service._id,
-            serviceName: service.name,
-            price: service.price,
-            image: service.images[0],
-            provider: service.provider,
+            serviceId: service?._id,
+            serviceName: service?.name,
+            price: basePrice,
+            basePrice,
+            image: (service?.images?.[0]?.url) || service?.images?.[0] || '/placeholder-service.jpg',
+            provider: service?.provider || {},
+            quantity: 1,
             date: selectedDate,
             time: selectedTime,
         };
@@ -88,19 +91,23 @@ const ServiceDetail = () => {
             return;
         }
 
-        // Navigate to booking page with service details
-        navigate('/booking', {
-            state: {
-                service,
-                selectedDate,
-                selectedTime,
-            },
-        });
+        // Add item to cart and go to checkout
+        const cartItem = {
+            serviceId: service?._id,
+            serviceName: service?.name,
+            price: typeof service?.price === 'number' ? service.price : (service?.price?.amount ?? 0),
+            image: service?.images?.[0] || '/placeholder-service.jpg',
+            provider: service?.provider,
+            date: selectedDate,
+            time: selectedTime,
+        };
+        dispatch(addToCart(cartItem));
+        navigate('/checkout');
     };
 
     const handleReviewSubmit = async (data) => {
         try {
-            await dispatch(addServiceReview({ serviceId: service._id, ...data })).unwrap();
+            await dispatch(addServiceReview({ serviceId: service._id, reviewData: data })).unwrap();
             toast.success('Review submitted successfully!');
             reset();
         } catch (error) {
@@ -109,9 +116,10 @@ const ServiceDetail = () => {
     };
 
     const renderStars = (rating) => {
+        const normalized = typeof rating === 'number' ? rating : (rating?.average ?? 0);
         return [...Array(5)].map((_, index) => (
             <span key={index}>
-                {index < Math.floor(rating) ? (
+                {index < Math.floor(normalized) ? (
                     <StarIconSolid className="h-5 w-5 text-yellow-400" />
                 ) : (
                     <StarIcon className="h-5 w-5 text-gray-300" />
@@ -124,7 +132,7 @@ const ServiceDetail = () => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-        }).format(price);
+        }).format(typeof price === 'number' ? price : (price?.amount ?? 0));
     };
 
     if (loading) {
@@ -181,7 +189,16 @@ const ServiceDetail = () => {
                         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
                             <div className="relative">
                                 <img
-                                    src={service.images[selectedImage] || '/placeholder-service.jpg'}
+                                    src={(() => {
+                                        const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+                                            ? import.meta.env.VITE_API_BASE_URL
+                                            : 'http://localhost:5000';
+                                        const val = service?.images?.[selectedImage];
+                                        const url = typeof val === 'string' ? val : (val?.url || '');
+                                        if (!url) return '/placeholder-service.jpg';
+                                        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                                        return `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+                                    })()}
                                     alt={service.name}
                                     className="w-full h-96 object-cover"
                                 />
@@ -203,7 +220,7 @@ const ServiceDetail = () => {
                             </div>
 
                             {/* Thumbnail Images */}
-                            {service.images && service.images.length > 1 && (
+                            {Array.isArray(service?.images) && service.images.length > 1 && (
                                 <div className="p-4 flex space-x-2 overflow-x-auto">
                                     {service.images.map((image, index) => (
                                         <button
@@ -213,7 +230,15 @@ const ServiceDetail = () => {
                                                 }`}
                                         >
                                             <img
-                                                src={image}
+                                                src={(() => {
+                                                    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+                                                        ? import.meta.env.VITE_API_BASE_URL
+                                                        : 'http://localhost:5000';
+                                                    const url = typeof image === 'string' ? image : (image?.url || '');
+                                                    if (!url) return '/placeholder-service.jpg';
+                                                    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                                                    return `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+                                                })()}
                                                 alt={`${service.name} ${index + 1}`}
                                                 className="w-full h-full object-cover"
                                             />
@@ -227,32 +252,32 @@ const ServiceDetail = () => {
                         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                             <div className="flex items-start justify-between mb-4">
                                 <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{service.name}</h1>
+                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{service?.name}</h1>
                                     <div className="flex items-center space-x-4">
                                         <div className="flex items-center">
-                                            {renderStars(service.rating)}
+                                            {renderStars(service?.rating)}
                                             <span className="ml-2 text-sm text-gray-600">
-                                                {service.rating.toFixed(1)} ({service.reviews?.length || 0} reviews)
+                                                {(typeof service?.rating === 'number' ? service.rating : (service?.rating?.average ?? 0)).toFixed(1)} ({service?.reviews?.length || 0} reviews)
                                             </span>
                                         </div>
                                         <div className="flex items-center text-sm text-gray-500">
                                             <MapPinIcon className="h-4 w-4 mr-1" />
-                                            {service.location?.city}, {service.location?.state}
+                                            {service?.location?.city}, {service?.location?.state}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-3xl font-bold text-green-600">
-                                        {formatPrice(service.price)}
+                                        {formatPrice(service?.price)}
                                     </div>
                                     <div className="text-sm text-gray-500">per booking</div>
                                 </div>
                             </div>
 
-                            <p className="text-gray-700 mb-6">{service.description}</p>
+                            <p className="text-gray-700 mb-6">{service?.description}</p>
 
                             {/* Features */}
-                            {service.features && service.features.length > 0 && (
+                            {Array.isArray(service?.features) && service.features.length > 0 && (
                                 <div className="mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Features</h3>
                                     <div className="grid grid-cols-2 gap-2">
@@ -267,7 +292,7 @@ const ServiceDetail = () => {
                             )}
 
                             {/* Amenities */}
-                            {service.amenities && service.amenities.length > 0 && (
+                            {Array.isArray(service?.amenities) && service.amenities.length > 0 && (
                                 <div className="mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h3>
                                     <div className="grid grid-cols-2 gap-2">
@@ -286,13 +311,13 @@ const ServiceDetail = () => {
                                 <h3 className="text-lg font-semibold text-gray-900 mb-3">About the Provider</h3>
                                 <div className="flex items-center space-x-4">
                                     <img
-                                        src={service.provider?.avatar || '/placeholder-avatar.jpg'}
-                                        alt={service.provider?.name}
+                                        src={service?.provider?.avatar || '/placeholder-avatar.jpg'}
+                                        alt={service?.provider?.name}
                                         className="w-12 h-12 rounded-full object-cover"
                                     />
                                     <div>
-                                        <h4 className="font-medium text-gray-900">{service.provider?.name}</h4>
-                                        <p className="text-sm text-gray-600">{service.provider?.email}</p>
+                                        <h4 className="font-medium text-gray-900">{service?.provider?.name}</h4>
+                                        <p className="text-sm text-gray-600">{service?.provider?.email}</p>
                                     </div>
                                 </div>
                             </div>
@@ -439,7 +464,7 @@ const ServiceDetail = () => {
                                 <div className="border-t pt-4">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-gray-600">Service Price</span>
-                                        <span className="font-medium">{formatPrice(service.price)}</span>
+                                        <span className="font-medium">{formatPrice(service?.price)}</span>
                                     </div>
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-gray-600">Booking Fee</span>
@@ -449,7 +474,7 @@ const ServiceDetail = () => {
                                         <div className="flex justify-between items-center">
                                             <span className="font-semibold text-gray-900">Total</span>
                                             <span className="font-bold text-lg text-green-600">
-                                                {formatPrice(service.price + 10)}
+                                                {formatPrice((typeof service?.price === 'number' ? service.price : (service?.price?.amount ?? 0)) + 10)}
                                             </span>
                                         </div>
                                     </div>
@@ -477,11 +502,11 @@ const ServiceDetail = () => {
                                     <div className="space-y-2">
                                         <div className="flex items-center text-sm text-gray-600">
                                             <PhoneIcon className="h-4 w-4 mr-2" />
-                                            {service.provider?.phone || 'N/A'}
+                                            {service?.provider?.phone || 'N/A'}
                                         </div>
                                         <div className="flex items-center text-sm text-gray-600">
                                             <EnvelopeIcon className="h-4 w-4 mr-2" />
-                                            {service.provider?.email || 'N/A'}
+                                            {service?.provider?.email || 'N/A'}
                                         </div>
                                     </div>
                                 </div>

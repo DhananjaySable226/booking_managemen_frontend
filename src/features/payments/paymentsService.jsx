@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL
+  : 'http://localhost:5000';
+
 const API_URL = '/api/payments';
 
 // Create payment intent
@@ -11,7 +15,7 @@ const createPaymentIntent = async (paymentData) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/create-intent`, paymentData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/create-payment-intent`, paymentData, config);
   return response.data;
 };
 
@@ -24,7 +28,7 @@ const confirmPayment = async (paymentIntentId, paymentMethodId) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/confirm`, {
+  const response = await axios.post(`${BASE_URL}${API_URL}/confirm-payment`, {
     paymentIntentId,
     paymentMethodId,
   }, config);
@@ -46,7 +50,7 @@ const getPaymentHistory = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/history?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/history?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -58,7 +62,7 @@ const getPaymentDetails = async (paymentId) => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/${paymentId}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/${paymentId}`, config);
   return response.data;
 };
 
@@ -71,7 +75,7 @@ const refundPayment = async (paymentId, refundData) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/${paymentId}/refund`, refundData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/${paymentId}/refund`, refundData, config);
   return response.data;
 };
 
@@ -84,7 +88,7 @@ const createStripeCustomer = async (customerData) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/customer`, customerData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/customer`, customerData, config);
   return response.data;
 };
 
@@ -97,7 +101,7 @@ const updatePaymentMethod = async (paymentMethodId, paymentMethodData) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/payment-method/${paymentMethodId}`, paymentMethodData, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/payment-method/${paymentMethodId}`, paymentMethodData, config);
   return response.data;
 };
 
@@ -109,7 +113,7 @@ const getPaymentMethods = async () => {
     },
   };
 
-  const response = await axios.get(`${API_URL}/payment-methods`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/payment-methods`, config);
   return response.data;
 };
 
@@ -122,7 +126,7 @@ const addPaymentMethod = async (paymentMethodData) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/payment-methods`, paymentMethodData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/payment-methods`, paymentMethodData, config);
   return response.data;
 };
 
@@ -134,7 +138,7 @@ const deletePaymentMethod = async (paymentMethodId) => {
     },
   };
 
-  const response = await axios.delete(`${API_URL}/payment-methods/${paymentMethodId}`, config);
+  const response = await axios.delete(`${BASE_URL}${API_URL}/payment-methods/${paymentMethodId}`, config);
   return response.data;
 };
 
@@ -147,7 +151,7 @@ const setDefaultPaymentMethod = async (paymentMethodId) => {
     },
   };
 
-  const response = await axios.put(`${API_URL}/payment-methods/${paymentMethodId}/default`, {}, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/payment-methods/${paymentMethodId}/default`, {}, config);
   return response.data;
 };
 
@@ -164,7 +168,7 @@ const getPaymentStats = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${API_URL}/stats?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/stats?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -184,7 +188,7 @@ const getAllPayments = async (params = {}) => {
   if (params.endDate) queryParams.append('endDate', params.endDate);
   if (params.userId) queryParams.append('userId', params.userId);
 
-  const response = await axios.get(`${API_URL}?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -203,7 +207,7 @@ const exportPayments = async (params = {}) => {
   if (params.endDate) queryParams.append('endDate', params.endDate);
   if (params.status) queryParams.append('status', params.status);
 
-  const response = await axios.get(`${API_URL}/export?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/export?${queryParams.toString()}`, config);
   return response.data;
 };
 
@@ -216,7 +220,7 @@ const verifyWebhook = async (webhookData, signature) => {
     },
   };
 
-  const response = await axios.post(`${API_URL}/webhook`, webhookData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/webhook`, webhookData, config);
   return response.data;
 };
 
