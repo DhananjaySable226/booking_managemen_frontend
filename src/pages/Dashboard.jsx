@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { 
   CalendarIcon, 
   ClockIcon, 
@@ -29,26 +29,69 @@ const Dashboard = () => {
   });
 
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, isLoading } = useSelector((state) => state.auth);
   const { bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
   const { payments, loading: paymentsLoading } = useSelector((state) => state.payments);
 
-  useEffect(() => {
-    dispatch(getUserBookings());
-    dispatch(getPaymentHistory());
-  }, [dispatch]);
+  // Add debugging
+  console.log('Dashboard render:', { user, isLoading, bookingsLoading, paymentsLoading, bookings, payments });
 
+  // Show loading if auth is still loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
+  // Redirect based on user role
+  if (user) {
+    if (user.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (user.role === 'service_provider') {
+      return <Navigate to="/provider" replace />;
+    }
+  }
+
+  // Show login message if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in</h1>
+          <p className="text-gray-600">You need to be logged in to view the dashboard.</p>
+          <Link 
+            to="/login" 
+            className="mt-4 inline-block bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch data when user is available
   useEffect(() => {
-    if (bookings.length > 0) {
+    if (user && user.token) {
+      dispatch(getUserBookings());
+      dispatch(getPaymentHistory());
+    }
+  }, [dispatch, user]);
+
+  // Calculate stats when bookings change
+  useEffect(() => {
+    if (bookings && Array.isArray(bookings) && bookings.length > 0) {
       const totalBookings = bookings.length;
       const completedBookings = bookings.filter(b => b.status === 'completed').length;
       const pendingBookings = bookings.filter(b => b.status === 'pending').length;
       const totalSpent = bookings
         .filter(b => b.status === 'completed')
-        .reduce((sum, b) => sum + b.totalAmount, 0);
+        .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
       const averageRating = bookings
         .filter(b => b.rating)
-        .reduce((sum, b) => sum + b.rating, 0) / bookings.filter(b => b.rating).length || 0;
+        .reduce((sum, b) => sum + (b.rating || 0), 0) / bookings.filter(b => b.rating).length || 0;
 
       setStats({
         totalBookings,
@@ -64,15 +107,20 @@ const Dashboard = () => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(price);
+    }).format(price || 0);
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!date) return 'N/A';
+    try {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -93,6 +141,7 @@ const Dashboard = () => {
   };
 
   const renderStars = (rating) => {
+    if (!rating) return null;
     return [...Array(5)].map((_, index) => (
       <span key={index}>
         {index < Math.floor(rating) ? (
@@ -104,6 +153,7 @@ const Dashboard = () => {
     ));
   };
 
+  // Show loading if data is still loading
   if (bookingsLoading || paymentsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -119,7 +169,7 @@ const Dashboard = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="mt-2 text-gray-600">
-            Welcome back, {user?.firstName}! Here's what's happening with your bookings.
+            Welcome back, {user?.firstName || 'User'}! Here's what's happening with your bookings.
           </p>
         </div>
 
@@ -207,7 +257,7 @@ const Dashboard = () => {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Bookings</h3>
-                  {bookings.slice(0, 3).length > 0 ? (
+                  {bookings && Array.isArray(bookings) && bookings.length > 0 ? (
                     <div className="space-y-4">
                       {bookings.slice(0, 3).map((booking) => (
                         <div key={booking._id} className="border rounded-lg p-4">
@@ -215,13 +265,13 @@ const Dashboard = () => {
                             <div className="flex items-center space-x-4">
                               <img
                                 src={booking.service?.images?.[0] || '/placeholder-service.jpg'}
-                                alt={booking.service?.name}
+                                alt={booking.service?.name || 'Service'}
                                 className="w-12 h-12 rounded-lg object-cover"
                               />
                               <div>
-                                <h4 className="font-medium text-gray-900">{booking.service?.name}</h4>
+                                <h4 className="font-medium text-gray-900">{booking.service?.name || 'Unknown Service'}</h4>
                                 <p className="text-sm text-gray-500">
-                                  {formatDate(booking.bookingDate)} at {booking.startTime}
+                                  {formatDate(booking.bookingDate)} at {booking.startTime || 'N/A'}
                                 </p>
                               </div>
                             </div>
@@ -295,7 +345,7 @@ const Dashboard = () => {
                   </Link>
                 </div>
                 
-                {bookings.length > 0 ? (
+                {bookings && Array.isArray(bookings) && bookings.length > 0 ? (
                   <div className="space-y-4">
                     {bookings.map((booking) => (
                       <div key={booking._id} className="border rounded-lg p-6">
@@ -303,12 +353,12 @@ const Dashboard = () => {
                           <div className="flex items-start space-x-4">
                             <img
                               src={booking.service?.images?.[0] || '/placeholder-service.jpg'}
-                              alt={booking.service?.name}
+                              alt={booking.service?.name || 'Service'}
                               className="w-16 h-16 rounded-lg object-cover"
                             />
                             <div>
-                              <h4 className="font-medium text-gray-900">{booking.service?.name}</h4>
-                              <p className="text-sm text-gray-500 mt-1">{booking.service?.description}</p>
+                              <h4 className="font-medium text-gray-900">{booking.service?.name || 'Unknown Service'}</h4>
+                              <p className="text-sm text-gray-500 mt-1">{booking.service?.description || 'No description'}</p>
                               <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                                 <span className="flex items-center">
                                   <CalendarIcon className="h-4 w-4 mr-1" />
@@ -316,11 +366,11 @@ const Dashboard = () => {
                                 </span>
                                 <span className="flex items-center">
                                   <ClockIcon className="h-4 w-4 mr-1" />
-                                  {booking.startTime} - {booking.endTime}
+                                  {booking.startTime || 'N/A'} - {booking.endTime || 'N/A'}
                                 </span>
                                 <span className="flex items-center">
                                   <MapPinIcon className="h-4 w-4 mr-1" />
-                                  {booking.service?.location?.city}
+                                  {booking.service?.location?.city || 'N/A'}
                                 </span>
                               </div>
                             </div>
@@ -374,7 +424,7 @@ const Dashboard = () => {
             {activeTab === 'payments' && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Payment History</h3>
-                {payments.length > 0 ? (
+                {payments && Array.isArray(payments) && payments.length > 0 ? (
                   <div className="space-y-4">
                     {payments.map((payment) => (
                       <div key={payment._id} className="border rounded-lg p-4">
