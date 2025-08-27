@@ -23,6 +23,9 @@ import Bookings from './pages/Bookings';
 import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ServiceManagement from './pages/admin/ServiceManagement';
+import ServiceForm from './pages/ServiceForm';
+import ServiceProviderDashboard from './pages/ServiceProviderDashboard';
 import NotFound from './pages/NotFound';
 import Payments from './pages/Payments';
 import Cart from './pages/Cart';
@@ -109,10 +112,46 @@ function App() {
 
             {/* Admin Routes */}
             <Route
-              path="/admin/*"
+              path="/admin"
               element={
                 <ProtectedRoute adminOnly>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/services"
+              element={
+                <ProtectedRoute adminOnly>
+                  <ServiceManagement />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Service Provider Routes */}
+            <Route
+              path="/provider/*"
+              element={
+                <ProtectedRoute>
+                  <ServiceProviderDashboard />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Service Management Routes */}
+            <Route
+              path="/services/create"
+              element={
+                <ProtectedRoute>
+                  <ServiceForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/services/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <ServiceForm />
                 </ProtectedRoute>
               }
             />
