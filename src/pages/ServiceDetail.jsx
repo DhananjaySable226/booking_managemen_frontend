@@ -34,6 +34,7 @@ const ServiceDetail = () => {
     const [isFavorite, setIsFavorite] = useState(false);
     const [showBookingForm, setShowBookingForm] = useState(false);
     const [showReviews, setShowReviews] = useState(false);
+    const [showShareMenu, setShowShareMenu] = useState(false);
 
     const { service, loading, error } = useSelector((state) => state.services);
     const favorites = useSelector((state) => state.favorites.items);
@@ -225,10 +226,8 @@ const ServiceDetail = () => {
                                             try {
                                                 if (isFavorite) {
                                                     await dispatch(removeFromFavorites(service._id)).unwrap();
-                                                    setIsFavorite(false);
                                                 } else {
                                                     await dispatch(addToFavorites(service._id)).unwrap();
-                                                    setIsFavorite(true);
                                                 }
                                             } catch (e) {
                                                 toast.error('Failed to update favorites');
@@ -242,9 +241,45 @@ const ServiceDetail = () => {
                                             <HeartIcon className="h-5 w-5 text-gray-600" />
                                         )}
                                     </button>
-                                    <button className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow">
-                                        <ShareIcon className="h-5 w-5 text-gray-600" />
-                                    </button>
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setShowShareMenu((v) => !v)}
+                                            className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow"
+                                        >
+                                            <ShareIcon className="h-5 w-5 text-gray-600" />
+                                        </button>
+                                        {showShareMenu && (
+                                            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            const shareUrl = window.location.href;
+                                                            await navigator.clipboard.writeText(shareUrl);
+                                                            toast.success('Link copied');
+                                                            setShowShareMenu(false);
+                                                        } catch (e) {
+                                                            toast.error('Failed to copy');
+                                                        }
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                                                >
+                                                    Copy link
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const shareUrl = window.location.href;
+                                                        const text = `Check out this service: ${service?.name}`;
+                                                        const wa = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + shareUrl)}`;
+                                                        window.open(wa, '_blank');
+                                                        setShowShareMenu(false);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                                                >
+                                                    Share on WhatsApp
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

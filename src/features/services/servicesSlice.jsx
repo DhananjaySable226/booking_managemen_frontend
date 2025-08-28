@@ -3,6 +3,7 @@ import servicesService from './servicesService';
 
 const initialState = {
   services: [],
+  myServices: [],
   service: null,
   featuredServices: [],
   loading: false,
@@ -85,6 +86,20 @@ export const getFeaturedServices = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await servicesService.getFeaturedServices();
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Get current provider's services (auth required)
+export const getMyServices = createAsyncThunk(
+  'services/getMyServices',
+  async (_, thunkAPI) => {
+    try {
+      const response = await servicesService.getProviderServices();
       return response;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -266,6 +281,22 @@ const servicesSlice = createSlice({
         state.error = action.payload;
         state.success = false;
       })
+      // Get my services
+      .addCase(getMyServices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.myServices = action.payload.data || action.payload.services || action.payload || [];
+        state.pagination = {};
+        state.success = true;
+      })
+      .addCase(getMyServices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
       // Create service
       .addCase(createService.pending, (state) => {
         state.loading = true;
@@ -275,6 +306,12 @@ const servicesSlice = createSlice({
         state.loading = false;
         const newService = action.payload.data || action.payload;
         state.services.unshift(newService);
+        // keep "My Services" in sync for the logged-in provider
+        if (Array.isArray(state.myServices)) {
+          state.myServices.unshift(newService);
+        } else {
+          state.myServices = [newService];
+        }
         state.success = true;
         state.message = 'Service created successfully';
       })

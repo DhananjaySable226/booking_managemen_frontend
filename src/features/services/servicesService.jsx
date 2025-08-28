@@ -178,7 +178,7 @@ const updateAvailability = async (serviceId, availabilityData) => {
   return response.data;
 };
 
-// Get provider services (requires authentication)
+// Get provider services (requires authentication) — use relative path to respect Vite proxy
 const getProviderServices = async () => {
   const config = {
     headers: {
@@ -186,7 +186,7 @@ const getProviderServices = async () => {
     },
   };
 
-  const response = await axios.get(`${BASE_URL}${API_URL}/provider/my-services`, config);
+  const response = await axios.get(`${API_URL}/provider/my-services`, config);
   return response.data;
 };
 

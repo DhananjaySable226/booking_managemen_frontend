@@ -12,7 +12,7 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
-import { getProviderServices } from '../features/services/serviceSlice';
+import { getMyServices } from '../features/services/servicesSlice';
 import { getProviderBookings } from '../features/bookings/bookingsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -23,17 +23,26 @@ const ServiceProviderDashboard = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const { user } = useSelector((state) => state.auth);
-  const { services, loading: servicesLoading } = useSelector((state) => state.services);
+  const { myServices, loading: servicesLoading } = useSelector((state) => state.services);
   const { bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
 
+  // Handle both shapes and fallback to localStorage on first load
+  const persisted = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user')) : null;
+  const persistedUser = persisted && persisted.user ? persisted.user : null;
+  const currentUser = (user && user._id)
+    ? user
+    : (user && user.user)
+      ? user.user
+      : persistedUser;
+
   useEffect(() => {
-    if (user && user._id) {
-      dispatch(getProviderServices(user._id));
+    if (currentUser && currentUser._id) {
+      dispatch(getMyServices());
       dispatch(getProviderBookings());
     }
-  }, [dispatch, user]);
+  }, [dispatch, currentUser && currentUser._id]);
 
   const handleDeleteService = (service) => {
     setSelectedService(service);
@@ -100,7 +109,7 @@ const ServiceProviderDashboard = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Service Provider Dashboard</h1>
               <p className="mt-2 text-gray-600">
-                Welcome back, {user?.firstName}! Manage your services and bookings.
+                Welcome back, {currentUser?.firstName}! Manage your services and bookings.
               </p>
             </div>
             <Link
@@ -155,7 +164,7 @@ const ServiceProviderDashboard = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Active Services</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {services && Array.isArray(services) ? services.filter(s => s.isActive).length : 0}
+                  {myServices && Array.isArray(myServices) ? myServices.filter(s => s.isActive).length : 0}
                 </p>
               </div>
             </div>
@@ -171,8 +180,8 @@ const ServiceProviderDashboard = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Average Rating</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {services && Array.isArray(services) && services.length > 0 
-                    ? (services.reduce((sum, s) => sum + (s.rating?.average || 0), 0) / services.length).toFixed(1)
+                  {myServices && Array.isArray(myServices) && myServices.length > 0
+                    ? (myServices.reduce((sum, s) => sum + (s.rating?.average || 0), 0) / myServices.length).toFixed(1)
                     : '0.0'
                   }
                 </p>
@@ -187,18 +196,17 @@ const ServiceProviderDashboard = () => {
             <nav className="-mb-px flex space-x-8 px-6">
               {[
                 { id: 'overview', name: 'Overview', count: null },
-                { id: 'services', name: 'My Services', count: services && Array.isArray(services) ? services.length : 0 },
+                { id: 'services', name: 'My Services', count: myServices && Array.isArray(myServices) ? myServices.length : 0 },
                 { id: 'bookings', name: 'Bookings', count: bookings && Array.isArray(bookings) ? bookings.length : 0 },
                 { id: 'earnings', name: 'Earnings', count: null }
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
                 >
                   {tab.name}
                   {tab.count !== null && (
@@ -248,7 +256,7 @@ const ServiceProviderDashboard = () => {
                       <h4 className="font-medium text-blue-900">Add New Service</h4>
                       <p className="text-sm text-blue-700">Create a new service offering</p>
                     </Link>
-                    
+
                     <Link
                       to="/bookings"
                       className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors"
@@ -257,7 +265,7 @@ const ServiceProviderDashboard = () => {
                       <h4 className="font-medium text-green-900">View Bookings</h4>
                       <p className="text-sm text-green-700">Manage your bookings</p>
                     </Link>
-                    
+
                     <Link
                       to="/profile"
                       className="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors"
@@ -283,8 +291,8 @@ const ServiceProviderDashboard = () => {
                     + Add New Service
                   </Link>
                 </div>
-                
-                {(!services || !Array.isArray(services) || services.length === 0) ? (
+
+                {(!myServices || !Array.isArray(myServices) || myServices.length === 0) ? (
                   <div className="text-center py-12">
                     <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">No services yet</h3>
@@ -303,7 +311,7 @@ const ServiceProviderDashboard = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {services && Array.isArray(services) && services.map((service) => (
+                    {myServices && Array.isArray(myServices) && myServices.map((service) => (
                       <div key={service._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                         <div className="relative">
                           <img
@@ -312,20 +320,19 @@ const ServiceProviderDashboard = () => {
                             className="w-full h-48 object-cover"
                           />
                           <div className="absolute top-2 right-2">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              service.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${service.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
                               {service.isActive ? 'Active' : 'Inactive'}
                             </span>
                           </div>
                         </div>
-                        
+
                         <div className="p-4">
                           <h4 className="text-lg font-medium text-gray-900 mb-2">{service.name}</h4>
                           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                             {service.description}
                           </p>
-                          
+
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-lg font-bold text-green-600">
                               ${service.price?.amount || 0}
@@ -337,7 +344,7 @@ const ServiceProviderDashboard = () => {
                               </span>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-500 capitalize">{service.category}</span>
                             <div className="flex space-x-2">
@@ -373,7 +380,7 @@ const ServiceProviderDashboard = () => {
             {activeTab === 'bookings' && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">All Bookings</h3>
-                
+
                 {(!bookings || !Array.isArray(bookings) || bookings.length === 0) ? (
                   <div className="text-center py-12">
                     <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -460,7 +467,7 @@ const ServiceProviderDashboard = () => {
             {activeTab === 'earnings' && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Earnings Overview</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <h4 className="text-lg font-medium text-gray-900 mb-4">Monthly Earnings</h4>
@@ -469,7 +476,7 @@ const ServiceProviderDashboard = () => {
                     </div>
                     <p className="text-sm text-gray-500 mt-2">Total earnings from completed bookings</p>
                   </div>
-                  
+
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <h4 className="text-lg font-medium text-gray-900 mb-4">Pending Payments</h4>
                     <div className="text-3xl font-bold text-yellow-600">
@@ -482,7 +489,7 @@ const ServiceProviderDashboard = () => {
                     <p className="text-sm text-gray-500 mt-2">Amount from confirmed bookings</p>
                   </div>
                 </div>
-                
+
                 <div className="mt-8">
                   <h4 className="text-lg font-medium text-gray-900 mb-4">Recent Transactions</h4>
                   <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -510,10 +517,10 @@ const ServiceProviderDashboard = () => {
                             </div>
                           </div>
                         )) : (
-                          <div className="px-6 py-4 text-center text-gray-500">
-                            No transactions yet
-                          </div>
-                        )}
+                        <div className="px-6 py-4 text-center text-gray-500">
+                          No transactions yet
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

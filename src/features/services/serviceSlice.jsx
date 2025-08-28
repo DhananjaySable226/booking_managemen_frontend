@@ -153,6 +153,19 @@ export const getProviderServices = createAsyncThunk(
     }
 );
 
+// Get current user's services (for service providers)
+export const getMyServices = createAsyncThunk(
+    'services/getMyServices',
+    async (_, thunkAPI) => {
+        try {
+            return await serviceService.getMyServices();
+        } catch (error) {
+            const message = error.response?.data?.message || error.message || error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 const serviceSlice = createSlice({
     name: 'services',
     initialState,
@@ -321,10 +334,23 @@ const serviceSlice = createSlice({
             .addCase(getProviderServices.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isError = false;
-                state.services = action.payload.services;
-                state.pagination = action.payload.pagination;
+                state.services = action.payload.data || action.payload;
             })
             .addCase(getProviderServices.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+            })
+            // Get my services
+            .addCase(getMyServices.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(getMyServices.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isError = false;
+                state.services = action.payload.data || action.payload;
+            })
+            .addCase(getMyServices.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
