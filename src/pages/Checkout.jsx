@@ -10,7 +10,6 @@ import {
   ArrowLeftIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
-// Remove incorrect imports; we'll define local helpers below
 import {
   selectCartItems,
   selectCartTotal,
@@ -18,13 +17,12 @@ import {
   clearCart,
 } from '../features/cart/cartSlice';
 import { createBooking } from '../features/bookings/bookingsSlice';
-import { createPaymentIntent, confirmPayment } from '../features/payments/paymentsSlice';
+import PaymentMethods from '../components/payments/PaymentMethods';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Checkout = () => {
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
   const [orderComplete, setOrderComplete] = useState(false);
 
   const dispatch = useDispatch();
@@ -53,7 +51,7 @@ const Checkout = () => {
 
   const formatPrice = (amount) => {
     const value = typeof amount === 'number' ? amount : (amount || 0);
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
   };
 
   useEffect(() => {
@@ -81,11 +79,11 @@ const Checkout = () => {
   };
 
   const calculateTax = () => {
-    return calculateSubtotal() * 0.08;
+    return calculateSubtotal() * 0.18; // 18% GST for India
   };
 
   const calculateBookingFees = () => {
-    return cartItemCount * 10;
+    return cartItemCount * 50; // ₹50 per booking
   };
 
   const calculateTotal = () => {
@@ -121,12 +119,7 @@ const Checkout = () => {
     setStep(step - 1);
   };
 
-  const onSubmit = async (data) => {
-    if (!user) {
-      toast.error('Please login to complete checkout');
-      return;
-    }
-
+  const handlePaymentSuccess = async (paymentData) => {
     setIsProcessing(true);
     try {
       // Create bookings for each cart item
@@ -139,41 +132,19 @@ const Checkout = () => {
           endTime: computeEndTime(item.time, item.quantity || 1),
           duration: item.quantity || 1,
           totalAmount: Number(calculateItemTotal(item)) || 0,
-          specialRequests: data.specialRequests || '',
+          specialRequests: watch('specialRequests') || '',
           contactInfo: {
-            phone: data.phone,
-            email: data.email,
+            phone: watch('phone'),
+            email: watch('email'),
           },
-          location: data.location || '',
+          location: watch('location') || '',
+          paymentId: paymentData._id,
+          paymentStatus: 'paid'
         };
 
         const booking = await dispatch(createBooking(bookingData)).unwrap();
         bookings.push(booking);
       }
-
-      // Create payment intent
-      const paymentIntent = await dispatch(createPaymentIntent({
-        amount: calculateTotal(),
-        currency: 'usd',
-        metadata: {
-          bookingIds: bookings.map(b => b._id).join(','),
-          userId: user._id,
-        }
-      })).unwrap();
-
-      // Confirm payment (in a real app, this would integrate with Stripe)
-      await dispatch(confirmPayment({
-        paymentIntentId: paymentIntent.id,
-        paymentMethod: {
-          type: paymentMethod,
-          card: {
-            number: data.cardNumber,
-            expMonth: data.expMonth,
-            expYear: data.expYear,
-            cvc: data.cvc,
-          }
-        }
-      })).unwrap();
 
       // Clear cart and show success
       dispatch(clearCart());
@@ -181,11 +152,16 @@ const Checkout = () => {
       toast.success('Order completed successfully!');
 
     } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Failed to complete checkout. Please try again.');
+      console.error('Booking creation error:', error);
+      toast.error('Failed to create bookings. Please contact support.');
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handlePaymentFailure = (error) => {
+    console.error('Payment failed:', error);
+    toast.error('Payment failed. Please try again.');
   };
 
   const renderStepIndicator = () => (
@@ -374,97 +350,20 @@ const Checkout = () => {
                   </div>
                 ) : (
                   // Step 2: Payment
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-6">
                     <h2 className="text-xl font-semibold text-gray-900">Payment Information</h2>
 
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center mb-4">
-                        <CreditCardIcon className="h-5 w-5 text-gray-400 mr-2" />
-                        <span className="text-sm font-medium text-gray-900">Credit Card</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Card Number *
-                          </label>
-                          <input
-                            {...register('cardNumber', {
-                              required: 'Card number is required',
-                              pattern: {
-                                value: /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/,
-                                message: 'Please enter a valid card number',
-                              },
-                            })}
-                            placeholder="1234 5678 9012 3456"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                          {errors.cardNumber && (
-                            <p className="mt-1 text-sm text-red-600">{errors.cardNumber.message}</p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Expiry Month *
-                          </label>
-                          <input
-                            {...register('expMonth', {
-                              required: 'Expiry month is required',
-                              pattern: {
-                                value: /^(0[1-9]|1[0-2])$/,
-                                message: 'Please enter a valid month (01-12)',
-                              },
-                            })}
-                            placeholder="MM"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                          {errors.expMonth && (
-                            <p className="mt-1 text-sm text-red-600">{errors.expMonth.message}</p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Expiry Year *
-                          </label>
-                          <input
-                            {...register('expYear', {
-                              required: 'Expiry year is required',
-                              pattern: {
-                                value: /^\d{2}$/,
-                                message: 'Please enter a valid year (YY)',
-                              },
-                            })}
-                            placeholder="YY"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                          {errors.expYear && (
-                            <p className="mt-1 text-sm text-red-600">{errors.expYear.message}</p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            CVV *
-                          </label>
-                          <input
-                            {...register('cvc', {
-                              required: 'CVV is required',
-                              pattern: {
-                                value: /^\d{3,4}$/,
-                                message: 'Please enter a valid CVV',
-                              },
-                            })}
-                            placeholder="123"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                          {errors.cvc && (
-                            <p className="mt-1 text-sm text-red-600">{errors.cvc.message}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <PaymentMethods
+                      amount={calculateTotal()}
+                      currency="INR"
+                      bookingId={`booking_${Date.now()}`}
+                      onSuccess={handlePaymentSuccess}
+                      onFailure={handlePaymentFailure}
+                      description={`Payment for ${cartItems.length} booking(s)`}
+                      customerName={`${watch('firstName')} ${watch('lastName')}`}
+                      customerEmail={watch('email')}
+                      customerPhone={watch('phone')}
+                    />
 
                     <div className="flex items-center justify-between">
                       <button
@@ -474,25 +373,8 @@ const Checkout = () => {
                       >
                         Back
                       </button>
-                      <button
-                        type="submit"
-                        disabled={isProcessing}
-                        className="bg-primary-600 text-white px-6 py-2 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <LoadingSpinner size="small" />
-                            <span className="ml-2">Processing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <LockClosedIcon className="h-4 w-4 mr-2" />
-                            Complete Order
-                          </>
-                        )}
-                      </button>
                     </div>
-                  </form>
+                  </div>
                 )}
               </div>
 
@@ -536,7 +418,7 @@ const Checkout = () => {
                       <span>{formatPrice(calculateBookingFees())}</span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600">
-                      <span>Tax</span>
+                      <span>GST (18%)</span>
                       <span>{formatPrice(calculateTax())}</span>
                     </div>
                     <div className="border-t pt-2">

@@ -6,8 +6,9 @@ const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && impor
 
 const API_URL = '/api/payments';
 
-// Create payment intent
-const createPaymentIntent = async (paymentData) => {
+// Razorpay functions
+// Create Razorpay order
+const createRazorpayOrder = async (orderData) => {
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -15,12 +16,12 @@ const createPaymentIntent = async (paymentData) => {
     },
   };
 
-  const response = await axios.post(`${BASE_URL}${API_URL}/create-payment-intent`, paymentData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/razorpay/create-order`, orderData, config);
   return response.data;
 };
 
-// Confirm payment
-const confirmPayment = async (paymentIntentId, paymentMethodId) => {
+// Verify Razorpay payment
+const verifyRazorpayPayment = async (paymentData) => {
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -28,13 +29,55 @@ const confirmPayment = async (paymentIntentId, paymentMethodId) => {
     },
   };
 
-  const response = await axios.post(`${BASE_URL}${API_URL}/confirm-payment`, {
-    paymentIntentId,
-    paymentMethodId,
-  }, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/razorpay/verify`, paymentData, config);
   return response.data;
 };
 
+// Get Razorpay payment details
+const getRazorpayPaymentDetails = async (paymentId) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.get(`${BASE_URL}${API_URL}/razorpay/${paymentId}`, config);
+  return response.data;
+};
+
+// Refund Razorpay payment
+const refundRazorpayPayment = async (paymentId, refundData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.post(`${BASE_URL}${API_URL}/razorpay/${paymentId}/refund`, refundData, config);
+  return response.data;
+};
+
+// Get Razorpay payment methods
+const getRazorpayPaymentMethods = async () => {
+  const response = await axios.get(`${BASE_URL}${API_URL}/razorpay/payment-methods`);
+  return response.data;
+};
+
+// Create Razorpay customer
+const createRazorpayCustomer = async (customerData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.post(`${BASE_URL}${API_URL}/razorpay/customer`, customerData, config);
+  return response.data;
+};
+
+// Generic payment data calls
 // Get payment history
 const getPaymentHistory = async (params = {}) => {
   const config = {
@@ -63,95 +106,6 @@ const getPaymentDetails = async (paymentId) => {
   };
 
   const response = await axios.get(`${BASE_URL}${API_URL}/${paymentId}`, config);
-  return response.data;
-};
-
-// Refund payment (admin only)
-const refundPayment = async (paymentId, refundData) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.post(`${BASE_URL}${API_URL}/${paymentId}/refund`, refundData, config);
-  return response.data;
-};
-
-// Create Stripe customer
-const createStripeCustomer = async (customerData) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.post(`${BASE_URL}${API_URL}/customer`, customerData, config);
-  return response.data;
-};
-
-// Update payment method
-const updatePaymentMethod = async (paymentMethodId, paymentMethodData) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.put(`${BASE_URL}${API_URL}/payment-method/${paymentMethodId}`, paymentMethodData, config);
-  return response.data;
-};
-
-// Get saved payment methods
-const getPaymentMethods = async () => {
-  const config = {
-    headers: {
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.get(`${BASE_URL}${API_URL}/payment-methods`, config);
-  return response.data;
-};
-
-// Add payment method
-const addPaymentMethod = async (paymentMethodData) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.post(`${BASE_URL}${API_URL}/payment-methods`, paymentMethodData, config);
-  return response.data;
-};
-
-// Delete payment method
-const deletePaymentMethod = async (paymentMethodId) => {
-  const config = {
-    headers: {
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.delete(`${BASE_URL}${API_URL}/payment-methods/${paymentMethodId}`, config);
-  return response.data;
-};
-
-// Set default payment method
-const setDefaultPaymentMethod = async (paymentMethodId) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
-    },
-  };
-
-  const response = await axios.put(`${BASE_URL}${API_URL}/payment-methods/${paymentMethodId}/default`, {}, config);
   return response.data;
 };
 
@@ -211,35 +165,20 @@ const exportPayments = async (params = {}) => {
   return response.data;
 };
 
-// Verify payment webhook
-const verifyWebhook = async (webhookData, signature) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      'Stripe-Signature': signature,
-    },
-  };
-
-  const response = await axios.post(`${BASE_URL}${API_URL}/webhook`, webhookData, config);
-  return response.data;
-};
-
 const paymentsService = {
-  createPaymentIntent,
-  confirmPayment,
+  // Razorpay
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+  getRazorpayPaymentDetails,
+  refundRazorpayPayment,
+  getRazorpayPaymentMethods,
+  createRazorpayCustomer,
+  // Generic data
   getPaymentHistory,
   getPaymentDetails,
-  refundPayment,
-  createStripeCustomer,
-  updatePaymentMethod,
-  getPaymentMethods,
-  addPaymentMethod,
-  deletePaymentMethod,
-  setDefaultPaymentMethod,
   getPaymentStats,
   getAllPayments,
   exportPayments,
-  verifyWebhook,
 };
 
 export default paymentsService;
