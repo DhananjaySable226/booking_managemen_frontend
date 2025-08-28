@@ -127,14 +127,18 @@ export const updatePassword = createAsyncThunk(
 // Forgot password
 export const forgotPassword = createAsyncThunk(
     'auth/forgotPassword',
-    async (email, thunkAPI) => {
+    async (payload, thunkAPI) => {
         try {
+            const email = typeof payload === 'string' ? payload : payload?.email;
+            if (!email) {
+                throw new Error('Email is required');
+            }
             return await authService.forgotPassword(email);
         } catch (error) {
             const message =
                 (error.response &&
                     error.response.data &&
-                    error.response.data.message) ||
+                    (error.response.data.message || error.response.data.errors?.[0]?.msg)) ||
                 error.message ||
                 error.toString();
             return thunkAPI.rejectWithValue(message);
