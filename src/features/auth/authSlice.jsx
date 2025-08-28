@@ -72,7 +72,7 @@ export const getMe = createAsyncThunk(
     'auth/getMe',
     async (_, thunkAPI) => {
         try {
-            const token = thunkAPI.getState().auth.user?.token;
+            const token = thunkAPI.getState().auth.user?.token || JSON.parse(localStorage.getItem('user'))?.token;
             return await authService.getMe(token);
         } catch (error) {
             const message =
@@ -91,7 +91,7 @@ export const updateProfile = createAsyncThunk(
     'auth/updateProfile',
     async (userData, thunkAPI) => {
         try {
-            const token = thunkAPI.getState().auth.user?.token;
+            const token = thunkAPI.getState().auth.user?.token || JSON.parse(localStorage.getItem('user'))?.token;
             return await authService.updateProfile(userData, token);
         } catch (error) {
             const message =
@@ -110,7 +110,7 @@ export const updatePassword = createAsyncThunk(
     'auth/updatePassword',
     async (passwordData, thunkAPI) => {
         try {
-            const token = thunkAPI.getState().auth.user?.token;
+            const token = thunkAPI.getState().auth.user?.token || JSON.parse(localStorage.getItem('user'))?.token;
             return await authService.updatePassword(passwordData, token);
         } catch (error) {
             const message =
@@ -184,7 +184,8 @@ export const authSlice = createSlice({
             .addCase(register.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.user = action.payload.data.user;
+                // Persist full payload (should include token)
+                state.user = action.payload.data;
                 state.message = action.payload.message;
             })
             .addCase(register.rejected, (state, action) => {
@@ -200,7 +201,8 @@ export const authSlice = createSlice({
             .addCase(login.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.user = action.payload.data.user;
+                // Persist full payload (should include token)
+                state.user = action.payload.data;
                 state.message = action.payload.message;
             })
             .addCase(login.rejected, (state, action) => {
@@ -220,7 +222,8 @@ export const authSlice = createSlice({
             .addCase(getMe.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.user = action.payload.data.user;
+                // Merge to preserve existing token
+                state.user = { ...state.user, ...action.payload.data.user };
             })
             .addCase(getMe.rejected, (state, action) => {
                 state.isLoading = false;
@@ -235,7 +238,8 @@ export const authSlice = createSlice({
             .addCase(updateProfile.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.user = action.payload.data.user;
+                // Merge to preserve existing token
+                state.user = { ...state.user, ...action.payload.data.user };
                 state.message = action.payload.message;
             })
             .addCase(updateProfile.rejected, (state, action) => {

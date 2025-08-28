@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -42,15 +42,26 @@ import Checkout from './pages/Checkout';
 // Redux actions
 import { getMe } from './features/auth/authSlice';
 
+// Guard to prevent duplicate getMe calls across React StrictMode remounts in development
+let lastFetchedToken = null;
+
 function App() {
   const dispatch = useDispatch();
   const { user, isLoading } = useSelector((state) => state.auth);
+  const hasFetchedMeRef = useRef(false);
 
   useEffect(() => {
-    if (user && user.token) {
-      dispatch(getMe());
-    }
-  }, [dispatch, user]);
+    const token = user?.token;
+    if (!token) return;
+
+    // Prevent duplicate calls across remounts and state changes
+    const alreadyFetchedForThisToken = lastFetchedToken === token || hasFetchedMeRef.current;
+    if (alreadyFetchedForThisToken) return;
+
+    hasFetchedMeRef.current = true;
+    lastFetchedToken = token;
+    dispatch(getMe());
+  }, [dispatch, user?.token]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -66,12 +77,12 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Services />} />
             <Route path="/services/:id" element={<ServiceDetail />} />
-            <Route path="/payments" element={<ProtectedRoute forbidRoles={['admin']}><Payments /></ProtectedRoute>} />
-            <Route path="/cart" element={<ProtectedRoute forbidRoles={['admin']}><Cart /></ProtectedRoute>} />
+            <Route path="/payments" element={<ProtectedRoute forbidRoles={['admin', 'service_provider']}><Payments /></ProtectedRoute>} />
+            <Route path="/cart" element={<ProtectedRoute forbidRoles={['admin', 'service_provider']}><Cart /></ProtectedRoute>} />
             <Route
               path="/checkout"
               element={
-                <ProtectedRoute forbidRoles={['admin']}>
+                <ProtectedRoute forbidRoles={['admin', 'service_provider']}>
                   <Checkout />
                 </ProtectedRoute>
               }
