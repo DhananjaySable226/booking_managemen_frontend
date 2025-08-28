@@ -5,7 +5,6 @@ const initialState = {
   payments: [],
   payment: null,
   paymentMethods: [],
-  paymentIntent: null,
   loading: false,
   error: null,
   success: false,
@@ -23,12 +22,13 @@ const initialState = {
   },
 };
 
-// Create payment intent
-export const createPaymentIntent = createAsyncThunk(
-  'payments/createIntent',
-  async (paymentData, thunkAPI) => {
+// Razorpay async thunks
+// Create Razorpay order
+export const createRazorpayOrder = createAsyncThunk(
+  'payments/createRazorpayOrder',
+  async (orderData, thunkAPI) => {
     try {
-      const response = await paymentsService.createPaymentIntent(paymentData);
+      const response = await paymentsService.createRazorpayOrder(orderData);
       return response;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -37,12 +37,68 @@ export const createPaymentIntent = createAsyncThunk(
   }
 );
 
-// Confirm payment
-export const confirmPayment = createAsyncThunk(
-  'payments/confirm',
-  async ({ paymentIntentId, paymentMethodId }, thunkAPI) => {
+// Verify Razorpay payment
+export const verifyRazorpayPayment = createAsyncThunk(
+  'payments/verifyRazorpayPayment',
+  async (paymentData, thunkAPI) => {
     try {
-      const response = await paymentsService.confirmPayment(paymentIntentId, paymentMethodId);
+      const response = await paymentsService.verifyRazorpayPayment(paymentData);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Get Razorpay payment details
+export const getRazorpayPaymentDetails = createAsyncThunk(
+  'payments/getRazorpayPaymentDetails',
+  async (paymentId, thunkAPI) => {
+    try {
+      const response = await paymentsService.getRazorpayPaymentDetails(paymentId);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Refund Razorpay payment
+export const refundRazorpayPayment = createAsyncThunk(
+  'payments/refundRazorpayPayment',
+  async ({ paymentId, refundData }, thunkAPI) => {
+    try {
+      const response = await paymentsService.refundRazorpayPayment(paymentId, refundData);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Get Razorpay payment methods
+export const getRazorpayPaymentMethods = createAsyncThunk(
+  'payments/getRazorpayPaymentMethods',
+  async (_, thunkAPI) => {
+    try {
+      const response = await paymentsService.getRazorpayPaymentMethods();
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Create Razorpay customer
+export const createRazorpayCustomer = createAsyncThunk(
+  'payments/createRazorpayCustomer',
+  async (customerData, thunkAPI) => {
+    try {
+      const response = await paymentsService.createRazorpayCustomer(customerData);
       return response;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -71,104 +127,6 @@ export const getPaymentDetails = createAsyncThunk(
   async (paymentId, thunkAPI) => {
     try {
       const response = await paymentsService.getPaymentDetails(paymentId);
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Refund payment
-export const refundPayment = createAsyncThunk(
-  'payments/refund',
-  async ({ paymentId, refundData }, thunkAPI) => {
-    try {
-      const response = await paymentsService.refundPayment(paymentId, refundData);
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Create Stripe customer
-export const createStripeCustomer = createAsyncThunk(
-  'payments/createCustomer',
-  async (customerData, thunkAPI) => {
-    try {
-      const response = await paymentsService.createStripeCustomer(customerData);
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Get payment methods
-export const getPaymentMethods = createAsyncThunk(
-  'payments/getPaymentMethods',
-  async (_, thunkAPI) => {
-    try {
-      const response = await paymentsService.getPaymentMethods();
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Add payment method
-export const addPaymentMethod = createAsyncThunk(
-  'payments/addPaymentMethod',
-  async (paymentMethodData, thunkAPI) => {
-    try {
-      const response = await paymentsService.addPaymentMethod(paymentMethodData);
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Update payment method
-export const updatePaymentMethod = createAsyncThunk(
-  'payments/updatePaymentMethod',
-  async ({ paymentMethodId, paymentMethodData }, thunkAPI) => {
-    try {
-      const response = await paymentsService.updatePaymentMethod(paymentMethodId, paymentMethodData);
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Delete payment method
-export const deletePaymentMethod = createAsyncThunk(
-  'payments/deletePaymentMethod',
-  async (paymentMethodId, thunkAPI) => {
-    try {
-      const response = await paymentsService.deletePaymentMethod(paymentMethodId);
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Set default payment method
-export const setDefaultPaymentMethod = createAsyncThunk(
-  'payments/setDefaultPaymentMethod',
-  async (paymentMethodId, thunkAPI) => {
-    try {
-      const response = await paymentsService.setDefaultPaymentMethod(paymentMethodId);
       return response;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -218,9 +176,6 @@ const paymentsSlice = createSlice({
     clearPayment: (state) => {
       state.payment = null;
     },
-    clearPaymentIntent: (state) => {
-      state.paymentIntent = null;
-    },
     setFilters: (state, action) => {
       state.filters = { ...state.filters, ...action.payload };
     },
@@ -233,34 +188,95 @@ const paymentsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Create payment intent
-      .addCase(createPaymentIntent.pending, (state) => {
+      // Razorpay async thunks
+      .addCase(createRazorpayOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createPaymentIntent.fulfilled, (state, action) => {
+      .addCase(createRazorpayOrder.fulfilled, (state, action) => {
         state.loading = false;
-        state.paymentIntent = action.payload;
         state.success = true;
+        state.message = 'Razorpay order created successfully';
       })
-      .addCase(createPaymentIntent.rejected, (state, action) => {
+      .addCase(createRazorpayOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;
       })
-      // Confirm payment
-      .addCase(confirmPayment.pending, (state) => {
+      .addCase(verifyRazorpayPayment.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(confirmPayment.fulfilled, (state, action) => {
+      .addCase(verifyRazorpayPayment.fulfilled, (state, action) => {
         state.loading = false;
         state.payment = action.payload;
-        state.paymentIntent = null;
         state.success = true;
-        state.message = 'Payment confirmed successfully';
+        state.message = 'Razorpay payment verified successfully';
       })
-      .addCase(confirmPayment.rejected, (state, action) => {
+      .addCase(verifyRazorpayPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      .addCase(getRazorpayPaymentDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRazorpayPaymentDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.payment = action.payload;
+        state.success = true;
+      })
+      .addCase(getRazorpayPaymentDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      .addCase(refundRazorpayPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refundRazorpayPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.payments.findIndex(payment => payment._id === action.payload._id);
+        if (index !== -1) {
+          state.payments[index] = action.payload;
+        }
+        if (state.payment && state.payment._id === action.payload._id) {
+          state.payment = action.payload;
+        }
+        state.success = true;
+        state.message = 'Razorpay payment refunded successfully';
+      })
+      .addCase(refundRazorpayPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      .addCase(getRazorpayPaymentMethods.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRazorpayPaymentMethods.fulfilled, (state, action) => {
+        state.loading = false;
+        state.paymentMethods = action.payload;
+        state.success = true;
+      })
+      .addCase(getRazorpayPaymentMethods.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      .addCase(createRazorpayCustomer.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createRazorpayCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.message = 'Razorpay customer created successfully';
+      })
+      .addCase(createRazorpayCustomer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;
@@ -296,134 +312,12 @@ const paymentsSlice = createSlice({
         state.error = action.payload;
         state.success = false;
       })
-      // Refund payment
-      .addCase(refundPayment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(refundPayment.fulfilled, (state, action) => {
-        state.loading = false;
-        const index = state.payments.findIndex(payment => payment._id === action.payload._id);
-        if (index !== -1) {
-          state.payments[index] = action.payload;
-        }
-        if (state.payment && state.payment._id === action.payload._id) {
-          state.payment = action.payload;
-        }
-        state.success = true;
-        state.message = 'Payment refunded successfully';
-      })
-      .addCase(refundPayment.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Create Stripe customer
-      .addCase(createStripeCustomer.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createStripeCustomer.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success = true;
-        state.message = 'Customer created successfully';
-      })
-      .addCase(createStripeCustomer.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Get payment methods
-      .addCase(getPaymentMethods.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getPaymentMethods.fulfilled, (state, action) => {
-        state.loading = false;
-        state.paymentMethods = action.payload;
-        state.success = true;
-      })
-      .addCase(getPaymentMethods.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Add payment method
-      .addCase(addPaymentMethod.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addPaymentMethod.fulfilled, (state, action) => {
-        state.loading = false;
-        state.paymentMethods.push(action.payload);
-        state.success = true;
-        state.message = 'Payment method added successfully';
-      })
-      .addCase(addPaymentMethod.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Update payment method
-      .addCase(updatePaymentMethod.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updatePaymentMethod.fulfilled, (state, action) => {
-        state.loading = false;
-        const index = state.paymentMethods.findIndex(method => method._id === action.payload._id);
-        if (index !== -1) {
-          state.paymentMethods[index] = action.payload;
-        }
-        state.success = true;
-        state.message = 'Payment method updated successfully';
-      })
-      .addCase(updatePaymentMethod.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Delete payment method
-      .addCase(deletePaymentMethod.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deletePaymentMethod.fulfilled, (state, action) => {
-        state.loading = false;
-        state.paymentMethods = state.paymentMethods.filter(method => method._id !== action.payload.id);
-        state.success = true;
-        state.message = 'Payment method deleted successfully';
-      })
-      .addCase(deletePaymentMethod.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
-      // Set default payment method
-      .addCase(setDefaultPaymentMethod.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(setDefaultPaymentMethod.fulfilled, (state, action) => {
-        state.loading = false;
-        state.paymentMethods = state.paymentMethods.map(method => ({
-          ...method,
-          isDefault: method._id === action.payload._id
-        }));
-        state.success = true;
-        state.message = 'Default payment method updated successfully';
-      })
-      .addCase(setDefaultPaymentMethod.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = false;
-      })
       // Get payment stats
       .addCase(getPaymentStats.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getPaymentStats.fulfilled, (state, action) => {
+      .addCase(getPaymentStats.fulfilled, (state) => {
         state.loading = false;
         state.success = true;
       })
@@ -454,7 +348,6 @@ const paymentsSlice = createSlice({
 export const { 
   reset, 
   clearPayment, 
-  clearPaymentIntent, 
   setFilters, 
   clearFilters, 
   setPagination 
