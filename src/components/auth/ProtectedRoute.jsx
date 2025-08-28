@@ -22,8 +22,10 @@ const ProtectedRoute = ({ children, adminOnly = false, forbidRoles = [] }) => {
   }
 
   if (forbidRoles.includes(user.role)) {
-    // If admin is forbidden on this route, send them to admin dashboard; otherwise default to /
-    const redirectTo = user.role === 'admin' ? '/admin' : '/';
+    // Redirect based on role when route is forbidden
+    let redirectTo = '/';
+    if (user.role === 'admin') redirectTo = '/admin';
+    else if (user.role === 'service_provider') redirectTo = '/provider';
     return <Navigate to={redirectTo} replace />;
   }
 

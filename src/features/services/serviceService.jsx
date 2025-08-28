@@ -125,6 +125,19 @@ const getProviderServices = async (providerId) => {
   return response.data;
 };
 
+// Get current user's services (for service providers)
+const getMyServices = async () => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.get(`${API_URL}/provider/my-services`, config);
+  return response.data;
+};
+
 const serviceService = {
   getServices,
   getService,
@@ -136,6 +149,7 @@ const serviceService = {
   getFeaturedServices,
   addServiceReview,
   getProviderServices,
+  getMyServices,
 };
 
 export default serviceService;

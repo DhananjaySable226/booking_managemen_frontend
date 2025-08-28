@@ -5,9 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // In production we call absolute BASE_URL, so proxy is mainly for local dev
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_BASE_URL || 'https://booking-management-backend.onrender.com/',
         changeOrigin: true,
         secure: false,
       },

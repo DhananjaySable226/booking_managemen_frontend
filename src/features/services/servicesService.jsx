@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
   ? import.meta.env.VITE_API_BASE_URL
-  : 'http://localhost:5000';
+  : 'https://booking-management-backend.onrender.com';
 
 const API_URL = '/api/services';
 
@@ -178,7 +178,7 @@ const updateAvailability = async (serviceId, availabilityData) => {
   return response.data;
 };
 
-// Get provider services (requires authentication)
+// Get provider services (requires authentication) — use relative path to respect Vite proxy
 const getProviderServices = async () => {
   const config = {
     headers: {
@@ -186,7 +186,7 @@ const getProviderServices = async () => {
     },
   };
 
-  const response = await axios.get(`${BASE_URL}${API_URL}/provider/my-services`, config);
+  const response = await axios.get(`${API_URL}/provider/my-services`, config);
   return response.data;
 };
 

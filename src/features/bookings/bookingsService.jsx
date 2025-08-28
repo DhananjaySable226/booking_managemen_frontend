@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
   ? import.meta.env.VITE_API_BASE_URL
-  : 'http://localhost:5000';
+  : 'https://booking-management-backend.onrender.com';
 
 const API_URL = '/api/bookings';
 
@@ -104,7 +104,7 @@ const getProviderBookings = async (params = {}) => {
   if (params.startDate) queryParams.append('startDate', params.startDate);
   if (params.endDate) queryParams.append('endDate', params.endDate);
 
-  const response = await axios.get(`${BASE_URL}${API_URL}/provider?${queryParams.toString()}`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/provider/my-bookings?${queryParams.toString()}`, config);
   return response.data;
 };
 

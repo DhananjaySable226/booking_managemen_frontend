@@ -18,7 +18,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 const Services = () => {
   const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
     ? import.meta.env.VITE_API_BASE_URL
-    : 'http://localhost:5000';
+    : 'https://booking-management-backend.onrender.com';
 
   const resolveImageUrl = (value) => {
     if (!value) return '/placeholder-service.jpg';

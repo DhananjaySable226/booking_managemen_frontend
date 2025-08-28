@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
-  ? import.meta.env.VITE_API_BASE_URL
-  : '';
-const API_URL = `${BASE_URL}/api/admin`;
+// Use relative API path so Vite proxy routes to the correct backend
+const API_URL = `/api/admin`;
 
 // Get dashboard statistics
 const getDashboardStats = async (params = {}) => {
