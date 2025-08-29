@@ -5,6 +5,7 @@ const initialState = {
   payments: [],
   payment: null,
   paymentMethods: [],
+  stats: null,
   loading: false,
   error: null,
   success: false,
@@ -209,7 +210,7 @@ const paymentsSlice = createSlice({
       })
       .addCase(verifyRazorpayPayment.fulfilled, (state, action) => {
         state.loading = false;
-        state.payment = action.payload;
+        state.payment = action.payload.payment;
         state.success = true;
         state.message = 'Razorpay payment verified successfully';
       })
@@ -224,7 +225,7 @@ const paymentsSlice = createSlice({
       })
       .addCase(getRazorpayPaymentDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.payment = action.payload;
+        state.payment = action.payload.payment;
         state.success = true;
       })
       .addCase(getRazorpayPaymentDetails.rejected, (state, action) => {
@@ -238,12 +239,13 @@ const paymentsSlice = createSlice({
       })
       .addCase(refundRazorpayPayment.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.payments.findIndex(payment => payment._id === action.payload._id);
+        const payment = action.payload.payment;
+        const index = state.payments.findIndex(p => p._id === payment._id);
         if (index !== -1) {
-          state.payments[index] = action.payload;
+          state.payments[index] = payment;
         }
-        if (state.payment && state.payment._id === action.payload._id) {
-          state.payment = action.payload;
+        if (state.payment && state.payment._id === payment._id) {
+          state.payment = payment;
         }
         state.success = true;
         state.message = 'Razorpay payment refunded successfully';
@@ -259,7 +261,7 @@ const paymentsSlice = createSlice({
       })
       .addCase(getRazorpayPaymentMethods.fulfilled, (state, action) => {
         state.loading = false;
-        state.paymentMethods = action.payload;
+        state.paymentMethods = action.payload.paymentMethods;
         state.success = true;
       })
       .addCase(getRazorpayPaymentMethods.rejected, (state, action) => {
@@ -304,7 +306,7 @@ const paymentsSlice = createSlice({
       })
       .addCase(getPaymentDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.payment = action.payload;
+        state.payment = action.payload.payment;
         state.success = true;
       })
       .addCase(getPaymentDetails.rejected, (state, action) => {
@@ -317,8 +319,9 @@ const paymentsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(getPaymentStats.fulfilled, (state) => {
+      .addCase(getPaymentStats.fulfilled, (state, action) => {
         state.loading = false;
+        state.stats = action.payload.stats;
         state.success = true;
       })
       .addCase(getPaymentStats.rejected, (state, action) => {
@@ -345,11 +348,11 @@ const paymentsSlice = createSlice({
   },
 });
 
-export const { 
-  reset, 
-  clearPayment, 
-  setFilters, 
-  clearFilters, 
-  setPagination 
+export const {
+  reset,
+  clearPayment,
+  setFilters,
+  clearFilters,
+  setPagination
 } = paymentsSlice.actions;
 export default paymentsSlice.reducer;

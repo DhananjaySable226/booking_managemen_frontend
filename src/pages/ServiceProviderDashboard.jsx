@@ -13,7 +13,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { getMyServices } from '../features/services/servicesSlice';
-import { getProviderBookings } from '../features/bookings/bookingsSlice';
+import { getUserBookings } from '../features/bookings/bookingsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ServiceProviderDashboard = () => {
@@ -40,7 +40,7 @@ const ServiceProviderDashboard = () => {
   useEffect(() => {
     if (currentUser && currentUser._id) {
       dispatch(getMyServices());
-      dispatch(getProviderBookings());
+      dispatch(getUserBookings());
     }
   }, [dispatch, currentUser && currentUser._id]);
 

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import PaymentMethods from './PaymentMethods';
 import RazorpayPayment from './RazorpayPayment';
 import PaymentHistory from './PaymentHistory';
+import PaymentStatistics from './PaymentStatistics';
 
 const PaymentExample = () => {
   const [activeTab, setActiveTab] = useState('payment');
@@ -11,6 +12,7 @@ const PaymentExample = () => {
   const tabs = [
     { id: 'payment', name: 'Make Payment', icon: '💳' },
     { id: 'history', name: 'Payment History', icon: '📋' },
+    { id: 'statistics', name: 'Statistics', icon: '📊' },
     { id: 'simple', name: 'Simple Payment', icon: '⚡' }
   ];
 
@@ -52,6 +54,14 @@ const PaymentExample = () => {
           </div>
         );
 
+      case 'statistics':
+        return (
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Statistics</h2>
+            <PaymentStatistics />
+          </div>
+        );
+
       case 'simple':
         return (
           <div className="max-w-md mx-auto">
@@ -61,7 +71,7 @@ const PaymentExample = () => {
                 <h3 className="text-lg font-semibold text-gray-900">Service Payment</h3>
                 <p className="text-gray-600">Quick payment for service booking</p>
               </div>
-              
+
               <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Amount:</span>
@@ -105,11 +115,10 @@ const PaymentExample = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  activeTab === tab.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === tab.id
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
               >
                 <span className="mr-2">{tab.icon}</span>
                 {tab.name}

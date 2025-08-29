@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
     ? import.meta.env.VITE_API_BASE_URL
-    : 'https://booking-management-backend.onrender.com';
+    : 'http://localhost:5000';
 
 const API_URL = '/api/users/me/favorites';
 

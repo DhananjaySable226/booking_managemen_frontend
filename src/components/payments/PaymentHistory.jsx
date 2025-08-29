@@ -114,7 +114,7 @@ const PaymentHistory = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
                   <div className="text-sm font-medium text-gray-900">
                     {formatAmount(payment.amount, payment.currency)}

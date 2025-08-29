@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { getUserBookings } from '../features/bookings/bookingsSlice';
-import { getPaymentHistory } from '../features/payments/paymentsSlice';
+import { getPaymentHistory, getPaymentStats } from '../features/payments/paymentsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { fetchFavorites } from '../features/favorites/favoritesSlice';
 
@@ -32,11 +32,10 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const { user, isLoading } = useSelector((state) => state.auth);
   const { bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
-  const { payments, loading: paymentsLoading } = useSelector((state) => state.payments);
+  const { payments, loading: paymentsLoading, stats: paymentStats } = useSelector((state) => state.payments);
   const { items: favoriteServices, loading: favoritesLoading } = useSelector((state) => state.favorites);
 
-  // Add debugging
-  console.log('Dashboard render:', { user, isLoading, bookingsLoading, paymentsLoading, bookings, payments });
+
 
   // Show loading if auth is still loading
   if (isLoading) {
@@ -79,32 +78,31 @@ const Dashboard = () => {
     if (user && user.token) {
       dispatch(getUserBookings());
       dispatch(getPaymentHistory());
+      dispatch(getPaymentStats({ period: 'month' }));
       dispatch(fetchFavorites());
     }
   }, [dispatch, user]);
 
-  // Calculate stats when bookings change
+  // Calculate stats when bookings and payment stats change
   useEffect(() => {
-    if (bookings && Array.isArray(bookings) && bookings.length > 0) {
-      const totalBookings = bookings.length;
-      const completedBookings = bookings.filter(b => b.status === 'completed').length;
-      const pendingBookings = bookings.filter(b => b.status === 'pending').length;
-      const totalSpent = bookings
-        .filter(b => b.status === 'completed')
-        .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-      const averageRating = bookings
-        .filter(b => b.rating)
-        .reduce((sum, b) => sum + (b.rating || 0), 0) / bookings.filter(b => b.rating).length || 0;
+    const totalBookings = bookings?.length || 0;
+    const completedBookings = bookings?.filter(b => b.status === 'completed').length || 0;
+    const pendingBookings = bookings?.filter(b => b.status === 'pending').length || 0;
 
-      setStats({
-        totalBookings,
-        completedBookings,
-        pendingBookings,
-        totalSpent,
-        averageRating
-      });
-    }
-  }, [bookings]);
+    // Use payment statistics for financial data
+    const paymentTotals = paymentStats?.totals || {};
+    const totalSpent = paymentTotals.completedAmount || 0;
+    const averageRating = bookings?.filter(b => b.rating)
+      .reduce((sum, b) => sum + (b.rating || 0), 0) / (bookings?.filter(b => b.rating).length || 1) || 0;
+
+    setStats({
+      totalBookings,
+      completedBookings,
+      pendingBookings,
+      totalSpent,
+      averageRating
+    });
+  }, [bookings, paymentStats]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
@@ -242,8 +240,8 @@ const Dashboard = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === tab.id
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                 >
                   <tab.icon className="h-5 w-5 mr-2" />
@@ -438,8 +436,8 @@ const Dashboard = () => {
                           <div className="text-right">
                             <p className="font-medium text-gray-900">{formatPrice(payment.amount)}</p>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${payment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
+                              payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
                               }`}>
                               {payment.status}
                             </span>
