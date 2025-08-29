@@ -17,7 +17,7 @@ import { getUserBookings } from '../features/bookings/bookingsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ServiceProviderDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('services');
   const [selectedService, setSelectedService] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -30,19 +30,33 @@ const ServiceProviderDashboard = () => {
 
   // Handle both shapes and fallback to localStorage on first load
   const persisted = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user')) : null;
-  const persistedUser = persisted && persisted.user ? persisted.user : null;
-  const currentUser = (user && user._id)
-    ? user
-    : (user && user.user)
-      ? user.user
-      : persistedUser;
+  const persistedUser = persisted && persisted.user ? persisted.user : persisted;
+  const currentUserRaw = (user && (user.user || user)) || persistedUser || null;
+  const currentUser = currentUserRaw ? { ...currentUserRaw, _id: currentUserRaw._id || currentUserRaw.id } : null;
 
   useEffect(() => {
-    if (currentUser && currentUser._id) {
+    if (currentUser && (currentUser._id || currentUser.id)) {
+      console.log('ServiceProviderDashboard: Fetching data for user:', currentUser._id || currentUser.id);
       dispatch(getMyServices());
       dispatch(getUserBookings());
     }
-  }, [dispatch, currentUser && currentUser._id]);
+  }, [dispatch, currentUser && (currentUser._id || currentUser.id)]);
+
+  // Refetch when switching back to My Services tab
+  useEffect(() => {
+    if (activeTab === 'services' && currentUser && (currentUser._id || currentUser.id)) {
+      dispatch(getMyServices());
+    }
+  }, [activeTab, dispatch, currentUser && (currentUser._id || currentUser.id)]);
+
+  // Debug logging
+  console.log('ServiceProviderDashboard render:', {
+    currentUser,
+    myServices: myServices?.length || 0,
+    servicesLoading,
+    bookings: bookings?.length || 0,
+    bookingsLoading
+  });
 
   const handleDeleteService = (service) => {
     setSelectedService(service);

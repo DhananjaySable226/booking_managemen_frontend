@@ -81,7 +81,7 @@ const Header = () => {
             >
               Services
             </Link>
-            {user && user.role !== 'admin' && (
+            {user && !['admin', 'service_provider'].includes(user.role) && (
               <Link
                 to="/bookings"
                 className={`${isActive('/bookings')
@@ -113,7 +113,7 @@ const Header = () => {
           {/* Right side - User menu and cart */}
           <div className="flex items-center space-x-4">
             {/* Cart Icon */}
-            {user && user.role !== 'admin' && (
+            {user && !['admin', 'service_provider'].includes(user.role) && (
               <Link
                 to="/cart"
                 className="relative p-2 text-gray-500 hover:text-primary-600 transition-colors duration-200"
@@ -238,7 +238,7 @@ const Header = () => {
               >
                 Services
               </Link>
-              {user && (
+              {user && !['admin', 'service_provider'].includes(user.role) && (
                 <Link
                   to="/bookings"
                   className={`${isActive('/bookings')

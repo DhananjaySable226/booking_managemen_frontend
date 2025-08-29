@@ -178,15 +178,17 @@ const updateAvailability = async (serviceId, availabilityData) => {
   return response.data;
 };
 
-// Get provider services (requires authentication) — use relative path to respect Vite proxy
+// Get provider services (requires authentication)
 const getProviderServices = async () => {
+  const stored = JSON.parse(localStorage.getItem('user'));
+  const token = stored?.token || stored?.user?.token;
   const config = {
     headers: {
-      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+      Authorization: token ? `Bearer ${token}` : '',
     },
   };
 
-  const response = await axios.get(`${API_URL}/provider/my-services`, config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/provider/my-services`, config);
   return response.data;
 };
 
