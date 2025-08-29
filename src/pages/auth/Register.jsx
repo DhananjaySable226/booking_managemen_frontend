@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { register as registerUser } from '../../features/auth/authSlice';
+import { register as registerUser, reset } from '../../features/auth/authSlice';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const Register = () => {
@@ -22,6 +22,12 @@ const Register = () => {
   } = useForm();
 
   const password = watch('password');
+
+  useEffect(() => {
+    // Clear stale flags so we don't show old toasts
+    dispatch(reset());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -79,9 +85,8 @@ const Register = () => {
                   }
                 })}
                 type="text"
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.firstName ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${errors.firstName ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                 placeholder="First Name"
               />
               {errors.firstName && (
@@ -101,9 +106,8 @@ const Register = () => {
                   }
                 })}
                 type="text"
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.lastName ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${errors.lastName ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                 placeholder="Last Name"
               />
               {errors.lastName && (
@@ -123,9 +127,8 @@ const Register = () => {
                   }
                 })}
                 type="email"
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
               />
               {errors.email && (
@@ -145,9 +148,8 @@ const Register = () => {
                   }
                 })}
                 type="tel"
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.phone ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${errors.phone ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                 placeholder="Phone Number"
               />
               {errors.phone && (
@@ -167,9 +169,8 @@ const Register = () => {
                   }
                 })}
                 type={showPassword ? 'text' : 'password'}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.password ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
               />
               <button
@@ -202,9 +203,8 @@ const Register = () => {
                   validate: value => value === password || 'Passwords do not match'
                 })}
                 type={showConfirmPassword ? 'text' : 'password'}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                 placeholder="Confirm Password"
               />
               <button

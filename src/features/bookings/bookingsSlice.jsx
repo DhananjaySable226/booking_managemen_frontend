@@ -251,8 +251,8 @@ const bookingsSlice = createSlice({
       })
       .addCase(getUserBookings.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload.bookings;
-        state.pagination = action.payload.pagination;
+        state.bookings = action.payload.bookings || action.payload.data || action.payload || [];
+        state.pagination = action.payload.pagination || {};
         state.success = true;
       })
       .addCase(getUserBookings.rejected, (state, action) => {
@@ -348,8 +348,8 @@ const bookingsSlice = createSlice({
       })
       .addCase(getProviderBookings.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload.bookings;
-        state.pagination = action.payload.pagination;
+        state.bookings = action.payload.bookings || action.payload.data || action.payload || [];
+        state.pagination = action.payload.pagination || {};
         state.success = true;
       })
       .addCase(getProviderBookings.rejected, (state, action) => {
@@ -364,8 +364,8 @@ const bookingsSlice = createSlice({
       })
       .addCase(getAllBookings.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload.bookings;
-        state.pagination = action.payload.pagination;
+        state.bookings = action.payload.bookings || action.payload.data || action.payload || [];
+        state.pagination = action.payload.pagination || {};
         state.success = true;
       })
       .addCase(getAllBookings.rejected, (state, action) => {

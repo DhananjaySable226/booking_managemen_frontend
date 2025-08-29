@@ -122,6 +122,11 @@ const Checkout = () => {
   const handlePaymentSuccess = async (paymentData) => {
     setIsProcessing(true);
     try {
+      const paymentId = paymentData?._id || paymentData?.id || paymentData?.razorpayPaymentId;
+      if (!paymentId) {
+        toast.error('Verified payment id missing');
+        throw new Error('Missing verified payment id');
+      }
       // Create bookings for each cart item
       const bookings = [];
       for (const item of cartItems) {
@@ -138,7 +143,7 @@ const Checkout = () => {
             email: watch('email'),
           },
           location: watch('location') || '',
-          paymentId: paymentData._id,
+          paymentId,
           paymentStatus: 'paid'
         };
 

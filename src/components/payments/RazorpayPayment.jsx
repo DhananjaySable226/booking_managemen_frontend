@@ -1,22 +1,25 @@
+
+
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
-import { 
-  createRazorpayOrder, 
+import {
+  createRazorpayOrder,
   verifyRazorpayPayment,
-  reset 
+  reset
 } from '../../features/payments/paymentsSlice';
 
-const RazorpayPayment = ({ 
-  amount, 
-  currency = 'INR', 
-  bookingId, 
-  onSuccess, 
+const RazorpayPayment = ({
+  amount,
+  currency = 'INR',
+  bookingId,
+  onSuccess,
   onFailure,
   description = 'Payment for booking',
   customerName,
   customerEmail,
-  customerPhone 
+  customerPhone
 }) => {
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.payments);
@@ -45,9 +48,10 @@ const RazorpayPayment = ({
         razorpay_signature: response.razorpay_signature
       })).unwrap();
 
-      if (result.success) {
+      if (result && result.success && (result.payment || result.data)) {
+        const payment = result.payment || result.data;
         toast.success('Payment successful!');
-        onSuccess && onSuccess(result.data);
+        onSuccess && onSuccess(payment);
       } else {
         toast.error('Payment verification failed');
         onFailure && onFailure(result);
@@ -103,8 +107,14 @@ const RazorpayPayment = ({
       return;
     }
 
+    const keyId = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID;
+    if (!keyId) {
+      toast.error('Razorpay key is not configured');
+      return;
+    }
+
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_ID',
+      key: keyId,
       amount: orderData.amount,
       currency: orderData.currency,
       name: 'Booking Management System',
@@ -162,13 +172,13 @@ const RazorpayPayment = ({
           `Pay ₹${amount}`
         )}
       </button>
-      
+
       {error && (
         <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
-      
+
       {success && (
         <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-green-600 text-sm">Payment order created successfully!</p>

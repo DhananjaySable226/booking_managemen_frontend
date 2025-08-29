@@ -31,9 +31,12 @@ const Bookings = () => {
       no_show: 'bg-gray-100 text-gray-800'
     };
 
+    const s = typeof status === 'string' && status.length > 0 ? status : 'pending';
+    const label = s.charAt(0).toUpperCase() + s.slice(1);
+    const cls = statusClasses[s] || statusClasses.pending;
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status] || statusClasses.pending}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+        {label}
       </span>
     );
   };
@@ -113,7 +116,7 @@ const Bookings = () => {
                         </div>
                         <div className="mt-1 flex items-center text-sm text-gray-500">
                           <p>
-                            {formatDate(booking.date)} at {formatTime(booking.time)}
+                            {formatDate(booking.bookingDate || booking.date)} at {formatTime(booking.startTime || booking.time)}
                           </p>
                         </div>
                         <div className="mt-1 text-sm text-gray-500">

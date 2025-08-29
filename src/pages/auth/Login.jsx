@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { login } from '../../features/auth/authSlice';
+import { login, reset } from '../../features/auth/authSlice';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const Login = () => {
@@ -21,6 +21,12 @@ const Login = () => {
     } = useForm();
 
     const redirect = location.search ? location.search.split('=')[1] : '/dashboard';
+
+    // Clear any stale auth flags/messages when opening the page
+    useEffect(() => {
+        dispatch(reset());
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (user) {

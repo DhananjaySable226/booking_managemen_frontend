@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { BASE_URL } from '../../config/api.js';
 
-const API_URL = '/api/auth/';
+const API_URL = '/api/auth';
 // Admin create service provider
 const registerServiceProvider = async (userData, token) => {
   const config = {
@@ -8,13 +9,13 @@ const registerServiceProvider = async (userData, token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.post(API_URL + 'register/service-provider', userData, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/register/service-provider`, userData, config);
   return response.data;
 };
 
 // Register user
 const register = async (userData) => {
-  const response = await axios.post(API_URL + 'register', userData);
+  const response = await axios.post(`${BASE_URL}${API_URL}/register`, userData);
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data.data));
   }
@@ -23,7 +24,7 @@ const register = async (userData) => {
 
 // Login user
 const login = async (userData) => {
-  const response = await axios.post(API_URL + 'login', userData);
+  const response = await axios.post(`${BASE_URL}${API_URL}/login`, userData);
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data.data));
   }
@@ -42,7 +43,7 @@ const getMe = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + 'me', config);
+  const response = await axios.get(`${BASE_URL}${API_URL}/me`, config);
   return response.data;
 };
 
@@ -53,7 +54,7 @@ const updateProfile = async (userData, token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.put(API_URL + 'profile', userData, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/profile`, userData, config);
   if (response.data) {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     const updatedUser = { ...currentUser, ...response.data.data.user };
@@ -69,19 +70,19 @@ const updatePassword = async (passwordData, token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.put(API_URL + 'password', passwordData, config);
+  const response = await axios.put(`${BASE_URL}${API_URL}/password`, passwordData, config);
   return response.data;
 };
 
 // Forgot password
 const forgotPassword = async (email) => {
-  const response = await axios.post(API_URL + 'forgot-password', { email });
+  const response = await axios.post(`${BASE_URL}${API_URL}/forgot-password`, { email });
   return response.data;
 };
 
 // Reset password
 const resetPassword = async (resetData) => {
-  const response = await axios.post(API_URL + 'reset-password', resetData);
+  const response = await axios.post(`${BASE_URL}${API_URL}/reset-password`, resetData);
   return response.data;
 };
 
@@ -92,7 +93,7 @@ const resendVerification = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.post(API_URL + 'resend-verification', {}, config);
+  const response = await axios.post(`${BASE_URL}${API_URL}/resend-verification`, {}, config);
   return response.data;
 };
 
