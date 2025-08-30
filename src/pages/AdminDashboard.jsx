@@ -2,22 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { 
-  UsersIcon, 
-  CalendarIcon, 
-  CurrencyDollarIcon, 
+import {
+  UsersIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
   ChartBarIcon,
   CogIcon,
   BellIcon,
   ArrowUpIcon,
   ArrowDownIcon
 } from '@heroicons/react/24/outline';
-import { 
-  getDashboardStats, 
-  getRevenueAnalytics, 
+import {
+  getDashboardStats,
+  getRevenueAnalytics,
   getBookingAnalytics,
   getUserAnalytics,
-  getServiceAnalytics 
+  getServiceAnalytics
 } from '../features/admin/adminSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -29,14 +29,14 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-  const { 
-    dashboardStats, 
-    revenueAnalytics, 
+  const {
+    dashboardStats,
+    revenueAnalytics,
     bookingAnalytics,
     userAnalytics,
     serviceAnalytics,
-    loading, 
-    error 
+    loading,
+    error
   } = useSelector((state) => state.admin);
 
   useEffect(() => {
@@ -102,9 +102,8 @@ const AdminDashboard = () => {
               ) : (
                 <ArrowDownIcon className="h-4 w-4 text-red-500" />
               )}
-              <span className={`ml-1 text-sm font-medium ${
-                isPositive ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <span className={`ml-1 text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'
+                }`}>
                 {Math.abs(change).toFixed(1)}%
               </span>
               <span className="ml-1 text-sm text-gray-500">vs last period</span>
@@ -243,10 +242,10 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {renderStatCard(
             'Total Revenue',
-            formatCurrency(dashboardStats?.totalRevenue || 0),
+            formatCurrency(dashboardStats?.data?.overview?.totalRevenue || 0),
             getPercentageChange(
-              dashboardStats?.currentRevenue || 0,
-              dashboardStats?.previousRevenue || 0
+              dashboardStats?.data?.overview?.totalRevenue || 0,
+              0
             ),
             <CurrencyDollarIcon className="h-6 w-6 text-blue-600" />,
             'blue'
