@@ -225,6 +225,45 @@ const exportBookings = async (params = {}) => {
   return response.data;
 };
 
+// Accept pending booking (Provider only)
+const acceptBooking = async (id) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}/accept`, {}, config);
+  return response.data;
+};
+
+// Reject pending booking (Provider only)
+const rejectBooking = async (id, reason) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}/reject`, { reason }, config);
+  return response.data;
+};
+
+// Complete confirmed booking (Provider only)
+const completeBooking = async (id) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JSON.parse(localStorage.getItem('user'))?.token}`,
+    },
+  };
+
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}/complete`, {}, config);
+  return response.data;
+};
+
 const bookingsService = {
   createBooking,
   getUserBookings,
@@ -240,6 +279,9 @@ const bookingsService = {
   updateBookingStatus,
   getBookingStats,
   exportBookings,
+  acceptBooking,
+  rejectBooking,
+  completeBooking,
 };
 
 export default bookingsService;

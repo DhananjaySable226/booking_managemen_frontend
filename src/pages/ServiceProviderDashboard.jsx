@@ -13,11 +13,17 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { getMyServices } from '../features/services/servicesSlice';
-import { getUserBookings } from '../features/bookings/bookingsSlice';
+import { getProviderBookings } from '../features/bookings/bookingsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ProviderBookings from './ProviderBookings';
 
 const ServiceProviderDashboard = () => {
-  const [activeTab, setActiveTab] = useState('services');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Log tab changes
+  useEffect(() => {
+    console.log('ServiceProviderDashboard: Tab changed to:', activeTab);
+  }, [activeTab]);
   const [selectedService, setSelectedService] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -26,7 +32,7 @@ const ServiceProviderDashboard = () => {
 
   const { user } = useSelector((state) => state.auth);
   const { myServices, loading: servicesLoading } = useSelector((state) => state.services);
-  const { bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
+  const { providerBookings: bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
 
   // Handle both shapes and fallback to localStorage on first load
   const persisted = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user')) : null;
@@ -38,9 +44,27 @@ const ServiceProviderDashboard = () => {
     if (currentUser && (currentUser._id || currentUser.id)) {
       console.log('ServiceProviderDashboard: Fetching data for user:', currentUser._id || currentUser.id);
       dispatch(getMyServices());
-      dispatch(getUserBookings());
+      // Only fetch bookings if we're on the bookings tab or overview
+      if (activeTab === 'bookings' || activeTab === 'overview') {
+        dispatch(getProviderBookings());
+      }
     }
-  }, [dispatch, currentUser && (currentUser._id || currentUser.id)]);
+  }, [dispatch, currentUser && (currentUser._id || currentUser.id), activeTab]);
+
+  // Refetch when switching to bookings tab
+  useEffect(() => {
+    if (activeTab === 'bookings' && currentUser && (currentUser._id || currentUser.id)) {
+      dispatch(getProviderBookings());
+    }
+  }, [activeTab, dispatch, currentUser && (currentUser._id || currentUser.id)]);
+
+  // Function to refresh all data (called after booking actions)
+  const refreshData = () => {
+    if (currentUser && (currentUser._id || currentUser.id)) {
+      dispatch(getMyServices());
+      dispatch(getProviderBookings());
+    }
+  };
 
   // Refetch when switching back to My Services tab
   useEffect(() => {
@@ -55,7 +79,8 @@ const ServiceProviderDashboard = () => {
     myServices: myServices?.length || 0,
     servicesLoading,
     bookings: bookings?.length || 0,
-    bookingsLoading
+    bookingsLoading,
+    activeTab
   });
 
   const handleDeleteService = (service) => {
@@ -91,9 +116,27 @@ const ServiceProviderDashboard = () => {
 
   const calculateTotalEarnings = () => {
     if (!bookings || !Array.isArray(bookings)) return 0;
-    return bookings
-      .filter(booking => booking.status === 'completed' && booking.paymentStatus === 'paid')
-      .reduce((total, booking) => total + (booking.totalAmount || 0), 0);
+
+    const completedBookings = bookings.filter(booking => booking.status === 'completed');
+    const totalEarnings = completedBookings.reduce((total, booking) => {
+      // Try different possible field names for the amount
+      const amount = booking.totalAmount || booking.amount || booking.price || 0;
+      return total + amount;
+    }, 0);
+
+    console.log('Earnings calculation:', {
+      totalBookings: bookings.length,
+      completedBookings: completedBookings.length,
+      completedBookingsData: completedBookings.map(b => ({
+        id: b._id,
+        status: b.status,
+        amount: b.totalAmount || b.amount || b.price,
+        serviceName: b.service?.name
+      })),
+      totalEarnings
+    });
+
+    return totalEarnings;
   };
 
   const getUpcomingBookings = () => {
@@ -167,6 +210,8 @@ const ServiceProviderDashboard = () => {
               </div>
             </div>
           </div>
+
+
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
@@ -392,88 +437,8 @@ const ServiceProviderDashboard = () => {
 
             {/* Bookings Tab */}
             {activeTab === 'bookings' && (
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">All Bookings</h3>
-
-                {(!bookings || !Array.isArray(bookings) || bookings.length === 0) ? (
-                  <div className="text-center py-12">
-                    <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings yet</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      When customers book your services, they'll appear here.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Service
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Customer
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date & Time
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Amount
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {bookings && Array.isArray(bookings) && bookings.map((booking) => (
-                          <tr key={booking._id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="flex-shrink-0 h-10 w-10">
-                                  <img
-                                    className="h-10 w-10 rounded-full object-cover"
-                                    src={booking.service?.images?.[0]?.url || '/placeholder-service.jpg'}
-                                    alt={booking.service?.name}
-                                  />
-                                </div>
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {booking.service?.name}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {booking.user?.firstName} {booking.user?.lastName}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {booking.user?.email}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {new Date(booking.bookingDate).toLocaleDateString()}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {booking.startTime} - {booking.endTime}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${booking.totalAmount || 0}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                                {booking.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div key="bookings-tab">
+                <ProviderBookings onDataRefresh={refreshData} />
               </div>
             )}
 

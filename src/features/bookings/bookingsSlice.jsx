@@ -2,7 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import bookingsService from './bookingsService';
 
 const initialState = {
-  bookings: [],
+  bookings: [], // General bookings (for backward compatibility)
+  userBookings: [], // User's own bookings
+  providerBookings: [], // Bookings for service providers
   booking: null,
   loading: false,
   error: null,
@@ -203,6 +205,48 @@ export const getBookingStats = createAsyncThunk(
   }
 );
 
+// Accept booking
+export const acceptBooking = createAsyncThunk(
+  'bookings/accept',
+  async (id, thunkAPI) => {
+    try {
+      const response = await bookingsService.acceptBooking(id);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Reject booking
+export const rejectBooking = createAsyncThunk(
+  'bookings/reject',
+  async ({ id, reason }, thunkAPI) => {
+    try {
+      const response = await bookingsService.rejectBooking(id, reason);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Complete booking
+export const completeBooking = createAsyncThunk(
+  'bookings/complete',
+  async (id, thunkAPI) => {
+    try {
+      const response = await bookingsService.completeBooking(id);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 const bookingsSlice = createSlice({
   name: 'bookings',
   initialState,
@@ -235,7 +279,14 @@ const bookingsSlice = createSlice({
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings.unshift(action.payload);
+        const newBooking = action.payload;
+
+        // Add to general bookings array
+        state.bookings.unshift(newBooking);
+
+        // Add to userBookings array (since user creates the booking)
+        state.userBookings.unshift(newBooking);
+
         state.success = true;
         state.message = 'Booking created successfully';
       })
@@ -251,7 +302,9 @@ const bookingsSlice = createSlice({
       })
       .addCase(getUserBookings.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload.bookings || action.payload.data || action.payload || [];
+        const bookingsData = action.payload.bookings || action.payload.data || action.payload || [];
+        state.userBookings = bookingsData;
+        state.bookings = bookingsData; // Keep backward compatibility
         state.pagination = action.payload.pagination || {};
         state.success = true;
       })
@@ -282,13 +335,28 @@ const bookingsSlice = createSlice({
       })
       .addCase(updateBooking.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.bookings.findIndex(booking => booking._id === action.payload._id);
-        if (index !== -1) {
-          state.bookings[index] = action.payload;
+        const updatedBooking = action.payload;
+
+        // Update in all relevant arrays
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
         }
-        if (state.booking && state.booking._id === action.payload._id) {
-          state.booking = action.payload;
+
+        const userIndex = state.userBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (userIndex !== -1) {
+          state.userBookings[userIndex] = updatedBooking;
         }
+
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
         state.success = true;
         state.message = 'Booking updated successfully';
       })
@@ -304,13 +372,28 @@ const bookingsSlice = createSlice({
       })
       .addCase(cancelBooking.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.bookings.findIndex(booking => booking._id === action.payload._id);
-        if (index !== -1) {
-          state.bookings[index] = action.payload;
+        const updatedBooking = action.payload;
+
+        // Update in all relevant arrays
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
         }
-        if (state.booking && state.booking._id === action.payload._id) {
-          state.booking = action.payload;
+
+        const userIndex = state.userBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (userIndex !== -1) {
+          state.userBookings[userIndex] = updatedBooking;
         }
+
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
         state.success = true;
         state.message = 'Booking cancelled successfully';
       })
@@ -326,13 +409,28 @@ const bookingsSlice = createSlice({
       })
       .addCase(rateBooking.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.bookings.findIndex(booking => booking._id === action.payload._id);
-        if (index !== -1) {
-          state.bookings[index] = action.payload;
+        const updatedBooking = action.payload;
+
+        // Update in all relevant arrays
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
         }
-        if (state.booking && state.booking._id === action.payload._id) {
-          state.booking = action.payload;
+
+        const userIndex = state.userBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (userIndex !== -1) {
+          state.userBookings[userIndex] = updatedBooking;
         }
+
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
         state.success = true;
         state.message = 'Rating submitted successfully';
       })
@@ -348,7 +446,9 @@ const bookingsSlice = createSlice({
       })
       .addCase(getProviderBookings.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload.bookings || action.payload.data || action.payload || [];
+        const bookingsData = action.payload.bookings || action.payload.data || action.payload || [];
+        state.providerBookings = bookingsData;
+        state.bookings = bookingsData; // Keep backward compatibility
         state.pagination = action.payload.pagination || {};
         state.success = true;
       })
@@ -429,13 +529,28 @@ const bookingsSlice = createSlice({
       })
       .addCase(updateBookingStatus.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.bookings.findIndex(booking => booking._id === action.payload._id);
-        if (index !== -1) {
-          state.bookings[index] = action.payload;
+        const updatedBooking = action.payload;
+
+        // Update in all relevant arrays
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
         }
-        if (state.booking && state.booking._id === action.payload._id) {
-          state.booking = action.payload;
+
+        const userIndex = state.userBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (userIndex !== -1) {
+          state.userBookings[userIndex] = updatedBooking;
         }
+
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
         state.success = true;
         state.message = 'Booking status updated successfully';
       })
@@ -454,6 +569,108 @@ const bookingsSlice = createSlice({
         state.success = true;
       })
       .addCase(getBookingStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      // Accept booking
+      .addCase(acceptBooking.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(acceptBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedBooking = action.payload.data;
+
+        // Update in providerBookings array
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        // Update in general bookings array for backward compatibility
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
+        }
+
+        // Update single booking if it exists
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
+        state.success = true;
+        state.message = 'Booking accepted successfully';
+      })
+      .addCase(acceptBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      // Reject booking
+      .addCase(rejectBooking.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(rejectBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedBooking = action.payload.data;
+
+        // Update in providerBookings array
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        // Update in general bookings array for backward compatibility
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
+        }
+
+        // Update single booking if it exists
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
+        state.success = true;
+        state.message = 'Booking rejected successfully';
+      })
+      .addCase(rejectBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      // Complete booking
+      .addCase(completeBooking.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(completeBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedBooking = action.payload.data;
+
+        // Update in providerBookings array
+        const providerIndex = state.providerBookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (providerIndex !== -1) {
+          state.providerBookings[providerIndex] = updatedBooking;
+        }
+
+        // Update in general bookings array for backward compatibility
+        const generalIndex = state.bookings.findIndex(booking => booking._id === updatedBooking._id);
+        if (generalIndex !== -1) {
+          state.bookings[generalIndex] = updatedBooking;
+        }
+
+        // Update single booking if it exists
+        if (state.booking && state.booking._id === updatedBooking._id) {
+          state.booking = updatedBooking;
+        }
+
+        state.success = true;
+        state.message = 'Booking completed successfully';
+      })
+      .addCase(completeBooking.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;

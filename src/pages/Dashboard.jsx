@@ -31,7 +31,7 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
   const { user, isLoading } = useSelector((state) => state.auth);
-  const { bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
+  const { userBookings: bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
   const { payments, loading: paymentsLoading, stats: paymentStats } = useSelector((state) => state.payments);
   const { items: favoriteServices, loading: favoritesLoading } = useSelector((state) => state.favorites);
 

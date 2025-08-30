@@ -7,7 +7,7 @@ import { getBookingById } from '../features/bookings/bookingsSlice';
 const BookingDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { bookings, booking, loading, error } = useSelector((state) => state.bookings);
+  const { userBookings: bookings, booking, loading, error } = useSelector((state) => state.bookings);
 
   useEffect(() => {
     if (!booking || booking?._id !== id) {

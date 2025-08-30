@@ -7,7 +7,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Bookings = () => {
   const dispatch = useDispatch();
-  const { bookings, isLoading, isError, message } = useSelector((state) => state.bookings);
+  const { userBookings: bookings, isLoading, isError, message } = useSelector((state) => state.bookings);
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
