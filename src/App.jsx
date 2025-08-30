@@ -1,8 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor } from './app/store';
+
+// Debug routing
+const RouteDebugger = () => {
+  const location = useLocation();
+  useEffect(() => {
+    console.log('Route changed to:', location.pathname);
+  }, [location]);
+  return null;
+};
 
 // Components
 import Header from './components/layout/Header';
@@ -69,6 +78,7 @@ function App() {
 
   return (
     <PersistGate loading={<LoadingSpinner />} persistor={persistor}>
+      <RouteDebugger />
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
         <main className="flex-grow">

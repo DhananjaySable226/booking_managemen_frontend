@@ -206,7 +206,11 @@ const Header = () => {
 
             {/* Mobile menu button */}
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => {
+                console.log('Mobile menu button clicked, current state:', isMenuOpen);
+                setIsMenuOpen(!isMenuOpen);
+                console.log('Mobile menu state changed to:', !isMenuOpen);
+              }}
               className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100"
             >
               {isMenuOpen ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
@@ -216,8 +220,9 @@ const Header = () => {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200" style={{ zIndex: 9999 }}>
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {console.log('Rendering mobile menu, isMenuOpen:', isMenuOpen)}
               <Link
                 to="/"
                 className={`${isActive('/')
@@ -234,7 +239,18 @@ const Header = () => {
                   ? 'bg-primary-50 text-primary-600'
                   : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                   } block px-3 py-2 rounded-md text-base font-medium`}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('Services link clicked!');
+                  console.log('Current location before navigation:', window.location.pathname);
+                  setIsMenuOpen(false);
+                  console.log('Mobile menu closed');
+                  // Force navigation after a small delay
+                  setTimeout(() => {
+                    console.log('Navigating to /services');
+                    window.location.href = '/services';
+                  }, 100);
+                }}
               >
                 Services
               </Link>
@@ -274,6 +290,7 @@ const Header = () => {
         <div
           className="fixed inset-0 z-40"
           onClick={() => {
+            console.log('Click outside detected, closing menus');
             setIsUserMenuOpen(false);
             setIsMenuOpen(false);
           }}
