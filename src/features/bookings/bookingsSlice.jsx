@@ -267,7 +267,7 @@ const bookingsSlice = createSlice({
       })
       .addCase(getBookingById.fulfilled, (state, action) => {
         state.loading = false;
-        state.booking = action.payload;
+        state.booking = action.payload?.data || action.payload;
         state.success = true;
       })
       .addCase(getBookingById.rejected, (state, action) => {

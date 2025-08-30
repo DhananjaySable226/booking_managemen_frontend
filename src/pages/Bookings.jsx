@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { getUserBookings } from '../features/bookings/bookingsSlice';
+import { getUserBookings, cancelBooking } from '../features/bookings/bookingsSlice';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Bookings = () => {
@@ -140,11 +140,17 @@ const Bookings = () => {
                         >
                           View Details
                         </Link>
-                        {booking.status === 'pending' && (
+                        {['pending', 'confirmed'].includes(booking.status) && (
                           <button
-                            onClick={() => {
-                              // Handle cancel booking
-                              toast.error('Cancel functionality not implemented yet');
+                            onClick={async () => {
+                              const reason = window.prompt('Reason for cancellation (optional):') || '';
+                              try {
+                                await dispatch(cancelBooking({ id: booking._id, reason })).unwrap();
+                                toast.success('Booking cancelled');
+                                dispatch(getUserBookings());
+                              } catch (err) {
+                                toast.error(err || 'Failed to cancel booking');
+                              }
                             }}
                             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           >

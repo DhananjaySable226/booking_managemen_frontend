@@ -65,7 +65,14 @@ const BookingDetail = () => {
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Date & Time</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {new Date(effectiveBooking.date).toLocaleDateString()} at {effectiveBooking.time}
+                {(() => {
+                  const dateValue = effectiveBooking.bookingDate || effectiveBooking.date;
+                  const startTime = effectiveBooking.startTime || effectiveBooking.time;
+                  if (!dateValue) return '—';
+                  const d = new Date(dateValue);
+                  const dateStr = isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+                  return `${dateStr}${startTime ? ` at ${startTime}` : ''}`;
+                })()}
               </dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

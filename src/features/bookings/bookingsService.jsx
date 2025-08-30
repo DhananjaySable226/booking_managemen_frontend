@@ -72,7 +72,14 @@ const cancelBooking = async (id, reason) => {
     },
   };
 
-  const response = await axios.put(`${BASE_URL}${API_URL}/${id}/cancel`, { reason }, config);
+  // Prefer user-friendly cancel endpoint; fallback to strict cancel if needed
+  let response;
+  try {
+    response = await axios.post(`${BASE_URL}${API_URL}/${id}/cancel-user`, { reason }, config);
+  } catch (e) {
+    // Fallback if endpoint not available on older servers
+    response = await axios.post(`${BASE_URL}${API_URL}/${id}/cancel`, { reason }, config);
+  }
   return response.data;
 };
 
