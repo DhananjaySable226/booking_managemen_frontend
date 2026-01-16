@@ -34,6 +34,10 @@ const login = async (userData) => {
 // Logout user
 const logout = () => {
   localStorage.removeItem('user');
+  localStorage.removeItem('persist:root');
+  localStorage.removeItem('rzp_checkout_anon_id');
+  localStorage.removeItem('rzp_stored_checkout_id');
+  localStorage.removeItem('rzp_device_id')
 };
 
 // Get current user
