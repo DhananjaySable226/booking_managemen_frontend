@@ -16,10 +16,9 @@ const registerServiceProvider = async (userData, token) => {
 // Register user
 const register = async (userData) => {
   const response = await axios.post(`${BASE_URL}${API_URL}/register`, userData);
-  console.log(response)
-  // if (response.data) {
-  //   localStorage.setItem('user', JSON.stringify(response.data.data));
-  // }
+  if (response.data) {
+    localStorage.setItem('user', JSON.stringify(response.data.data));
+  }
   return response.data;
 };
 
